@@ -446,3 +446,334 @@ function AdminPage({students,pendingReadings,pendingRegs,benefits,topBenefit,set
         ))}
       </div>
       {tab==='pending'&&(
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          {pendingReadings.length===0?<div style={{textAlign:'center',padding:'40px',color:C.muted}}><div style={{fontSize:40}}>✅</div><p>لا توجد قراءات معلقة</p></div>:
+          pendingReadings.map(r=>(
+            <div key={r.id} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:14}}>
+              <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+                <div style={{flex:1}}>
+                  <div style={{color:C.text,fontWeight:700,fontSize:13}}>{r.book}</div>
+                  <div style={{color:C.muted,fontSize:11,marginTop:2}}>{r.student} • {r.pages} صفحة • {r.km} كم • {r.date}</div>
+                  <div style={{background:C.tealBg,borderRadius:8,padding:'8px 10px',marginTop:8,color:C.tealD,fontSize:12,lineHeight:1.6}}>
+                    💡 "{r.benefit}"
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:6,alignItems:'flex-start'}}>
+                  <button onClick={()=>approve(r)} disabled={saving===r.id} style={{padding:'5px 12px',background:C.greenBg,color:C.green,border:`1px solid #86EFAC`,borderRadius:7,cursor:'pointer',fontSize:11,fontWeight:700}}>
+                    {saving===r.id?'...':'✓ قبول'}
+                  </button>
+                  <button onClick={()=>reject(r.id)} disabled={saving===r.id} style={{padding:'5px 12px',background:C.redBg,color:C.red,border:`1px solid #FCA5A5`,borderRadius:7,cursor:'pointer',fontSize:11,fontWeight:700}}>
+                    {saving===r.id?'...':'✗ رفض'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {tab==='regs'&&(
+        <div style={{display:'flex',flexDirection:'column',gap:8}}>
+          {pendingRegs.length===0?<div style={{textAlign:'center',padding:'40px',color:C.muted}}><div style={{fontSize:40}}>👤</div><p>لا توجد طلبات تسجيل</p></div>:
+          pendingRegs.map(r=>(
+            <div key={r.id} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:14,display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+              <div>
+                <div style={{color:C.text,fontWeight:700,fontSize:13}}>{r.name}</div>
+                <div style={{color:C.muted,fontSize:11,marginTop:2}}>{r.email} • {r.group}</div>
+              </div>
+              <div style={{display:'flex',gap:6}}>
+                <button onClick={()=>approveReg(r)} disabled={saving===r.id} style={{padding:'5px 12px',background:C.greenBg,color:C.green,border:`1px solid #86EFAC`,borderRadius:7,cursor:'pointer',fontSize:11,fontWeight:700}}>
+                  {saving===r.id?'...':'✓ قبول'}
+                </button>
+                <button onClick={()=>rejectReg(r)} disabled={saving===r.id} style={{padding:'5px 12px',background:C.redBg,color:C.red,border:`1px solid #FCA5A5`,borderRadius:7,cursor:'pointer',fontSize:11,fontWeight:700}}>
+                  {saving===r.id?'...':'✗ رفض'}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {tab==='top'&&(
+        <div>
+          {topBenefit&&<div style={{background:C.goldBg,border:`1.5px solid ${C.gold}55`,borderRadius:14,padding:14,marginBottom:14}}>
+            <div style={{color:C.orange,fontWeight:700,fontSize:12,marginBottom:6}}>🌟 أجمل فائدة اليوم الحالية</div>
+            <div style={{color:C.text,fontSize:13,fontStyle:'italic',marginBottom:4}}>"{topBenefit.benefit}"</div>
+            <div style={{color:C.muted,fontSize:11}}>{topBenefit.student} — {topBenefit.book}</div>
+            <button onClick={clearTop} disabled={saving==='top'} style={{marginTop:8,padding:'4px 12px',background:C.redBg,color:C.red,border:`1px solid #FCA5A5`,borderRadius:6,cursor:'pointer',fontSize:11}}>
+              {saving==='top'?'...':'إلغاء التحديد'}
+            </button>
+          </div>}
+          {benefits.length===0?<div style={{textAlign:'center',padding:'40px',color:C.muted}}><div style={{fontSize:40}}>💡</div><p>لا توجد فوائد معتمدة بعد</p></div>:
+          <div style={{display:'flex',flexDirection:'column',gap:8}}>
+            {benefits.map(b=>(
+              <div key={b.id} style={{background:topBenefit?.id===b.id?C.goldBg:C.white,border:`1.5px solid ${topBenefit?.id===b.id?C.gold+'55':C.border}`,borderRadius:12,padding:14}}>
+                <div style={{color:C.text,fontSize:13,lineHeight:1.6,fontStyle:'italic',marginBottom:6}}>"{b.benefit}"</div>
+                <div style={{color:C.muted,fontSize:11}}>{b.student} — {b.book} — {b.date}</div>
+                {topBenefit?.id!==b.id&&<button onClick={()=>pickTop(b)} disabled={saving==='top'} style={{marginTop:8,padding:'4px 12px',background:C.goldBg,color:C.orange,border:`1px solid ${C.gold}55`,borderRadius:6,cursor:'pointer',fontSize:11,fontWeight:700}}>
+                  {saving==='top'?'...':'⭐ اختر أجمل فائدة (+'+BONUS_KM+' كم)'}
+                </button>}
+              </div>
+            ))}
+          </div>}
+        </div>
+      )}
+      {tab==='students'&&(students.length===0?<div style={{textAlign:'center',padding:'40px',color:C.muted}}><div style={{fontSize:40}}>🏃</div><p>لا يوجد طلاب بعد</p></div>:
+        <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,overflow:'hidden'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['#','الاسم','الحلقة','الكيلومترات'].map(h=><th key={h} style={thS}>{h}</th>)}</tr></thead><tbody>{students.map((st,i)=><tr key={st.id}><td style={{...tdS(),color:i<3?MC[i]:C.muted,fontWeight:700}}>{i+1}</td><td style={tdS()}>{st.name}</td><td style={{...tdS(C.muted),fontSize:11}}>{st.group}</td><td style={{...tdS(C.teal),fontWeight:700}}>{st.km||0}</td></tr>)}</tbody></table></div>
+      )}
+      {tab==='groups'&&(
+        <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,overflow:'hidden'}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr>{['#','الحلقة','الفرسان','المسافة'].map(h=><th key={h} style={thS}>{h}</th>)}</tr></thead><tbody>{GROUPS.map((name,i)=>{const g={km:students.filter(s=>s.group===name).reduce((a,s)=>a+(s.km||0),0),n:students.filter(s=>s.group===name).length};return(<tr key={i} style={{borderTop:`1px solid ${C.border}`}}><td style={{...tdS(),color:i<3?MC[i]:C.muted,fontWeight:700}}>{i+1}</td><td style={tdS()}>{name}</td><td style={{...tdS(C.muted)}}>{g.n}</td><td style={{...tdS(C.teal),fontWeight:700}}>{g.km>0?`${g.km} كم`:'—'}</td></tr>);})}</tbody></table></div>
+      )}
+    </div>
+  );
+}
+function AuthScreen({onAdminLogin}){
+  const[mode,setMode]=useState('login');
+  const[form,setForm]=useState({name:'',email:'',password:'',group:''});
+  const[err,setErr]=useState('');
+  const[loading,setLoading]=useState(false);
+  const set=k=>e=>setForm(f=>({...f,[k]:e.target.value}));
+  const inp={padding:'11px 14px',background:C.grayBg,border:`1px solid ${C.border}`,borderRadius:10,color:C.text,fontSize:13,outline:'none',direction:'rtl',width:'100%',boxSizing:'border-box'};
+  const submit=async()=>{
+    if(!form.email.trim()||!form.password){setErr('أدخل البريد وكلمة المرور');return;}
+    setLoading(true);setErr('');
+    try{
+      if(mode==='login'){
+        await FB.fbLogin(form.email.trim(),form.password);
+      } else {
+        const email=form.email.trim().toLowerCase();
+        const isAdmin=email===FB.ADMIN_EMAIL;
+        if(!form.name.trim()||(!isAdmin&&!form.group)){
+          setErr('أكمل جميع الحقول');setLoading(false);return;
+        }
+        const cred=await FB.fbRegister(email,form.password);
+        const uid=cred.user.uid;
+        await FB.saveUser(uid,{
+          name:form.name.trim(),
+          email,
+          group:isAdmin?'المشرف':form.group,
+          km:0,
+          role:isAdmin?'admin':'student',
+          approved:isAdmin,
+          createdAt:new Date().toISOString(),
+        });
+        if(!isAdmin){
+          await FB.addPendingReg(uid,{name:form.name.trim(),email,group:form.group});
+          await FB.fbLogout();
+          setLoading(false);
+          setForm({name:'',email:'',password:'',group:''});
+          setErr('');setMode('login');
+          alert('✅ تم التسجيل! انتظر موافقة المشرف ثم سجّل دخولك.');
+          return;
+        }
+        window.location.reload();
+        return;
+      }
+    }catch(e){
+      const msgs={'auth/user-not-found':'البريد غير مسجل','auth/wrong-password':'كلمة المرور خاطئة','auth/email-already-in-use':'البريد مستخدم مسبقاً','auth/weak-password':'كلمة المرور ضعيفة (٦ أحرف على الأقل)','auth/invalid-email':'صيغة البريد غير صحيحة'};
+      setErr(msgs[e.code]||'حدث خطأ، حاول مجدداً');
+    }
+    setLoading(false);
+  };
+  return(
+    <div style={{maxWidth:400,margin:'30px auto',padding:'0 16px',direction:'rtl'}}>
+      <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:20,padding:'26px 20px',boxShadow:'0 4px 20px rgba(0,0,0,.07)'}}>
+        <div style={{textAlign:'center',marginBottom:20}}>
+          <img src={LOGO} alt="logo" style={{height:48,marginBottom:7}}/>
+          <div style={{color:C.teal,fontWeight:800,fontSize:15}}>سباق القرّاء الصيفي ١</div>
+        </div>
+        <div style={{display:'flex',borderRadius:10,overflow:'hidden',border:`1px solid ${C.border}`,marginBottom:16}}>
+          {[['login','تسجيل الدخول'],['register','إنشاء حساب']].map(([m,l])=>(
+            <button key={m} onClick={()=>{setMode(m);setErr('');}} style={{flex:1,padding:'10px',background:mode===m?C.teal:C.white,color:mode===m?C.white:C.gray,border:'none',cursor:'pointer',fontSize:12,fontWeight:700}}>{l}</button>
+          ))}
+        </div>
+        <div style={{display:'flex',flexDirection:'column',gap:10}}>
+          {mode==='register'&&<input placeholder="الاسم الكامل *" value={form.name} onChange={set('name')} style={inp}/>}
+          <input type="email" placeholder="البريد الإلكتروني *" value={form.email} onChange={set('email')} style={inp}/>
+          <input type="password" placeholder="كلمة المرور *" value={form.password} onChange={set('password')} onKeyDown={e=>e.key==='Enter'&&submit()} style={inp}/>
+          {mode==='register'&&<select value={form.group} onChange={set('group')} style={{...inp,color:form.group?C.text:C.muted}}>
+            <option value="">اختر حلقتك *</option>
+            {GROUPS.map(g=><option key={g} value={g}>{g}</option>)}
+          </select>}
+          {err&&<div style={{background:C.redBg,color:C.red,fontSize:12,padding:'8px 12px',borderRadius:8,textAlign:'center'}}>{err}</div>}
+          <button onClick={submit} disabled={loading} style={{padding:12,background:loading?C.grayL:C.teal,color:C.white,border:'none',borderRadius:10,fontSize:14,fontWeight:800,cursor:loading?'not-allowed':'pointer',marginTop:2}}>
+            {loading?'جارٍ...':(mode==='login'?'دخول':'إنشاء الحساب')}
+          </button>
+        </div>
+        {mode==='register'&&<div style={{color:C.muted,fontSize:10,textAlign:'center',marginTop:10,lineHeight:1.6}}>سيُرسل طلبك للمشرف وتُفعّل حسابك بعد الموافقة</div>}
+      </div>
+    </div>
+  );
+}
+function BottomNav({page,setPage}){
+  const items=[['home','🏠','الرئيسية'],['race','🏆','السباق'],['add','📚','أضف قراءة'],['card','📋','بطاقتي']];
+  return(
+    <nav style={{position:'fixed',bottom:0,left:0,right:0,background:C.white,borderTop:`1px solid ${C.border}`,display:'flex',flexDirection:'row-reverse',zIndex:100,boxShadow:'0 -4px 14px rgba(0,0,0,.07)'}}>
+      {items.map(([p,ic,l])=>(
+        <button key={p} onClick={()=>setPage(p)} style={{flex:1,border:'none',background:'transparent',cursor:'pointer',padding:'10px 4px 8px',display:'flex',flexDirection:'column',alignItems:'center',gap:1,position:'relative',outline:'none'}}>
+          {p==='add'?(
+            <div style={{position:'absolute',top:-18,width:48,height:48,background:C.teal,borderRadius:'50%',display:'flex',alignItems:'center',justifyContent:'center',boxShadow:`0 4px 14px ${C.teal}55`,border:`3px solid ${C.white}`}}>
+              <span style={{fontSize:20}}>📚</span>
+            </div>
+          ):<span style={{fontSize:21,filter:page===p?'none':'grayscale(30%)'}}>{ic}</span>}
+          {p==='add'?<span style={{marginTop:20}}/>:null}
+          <span style={{fontSize:10,color:page===p?C.teal:C.muted,fontWeight:page===p?700:400}}>{l}</span>
+          {page===p&&p!=='add'&&<div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:18,height:3,borderRadius:2,background:C.teal}}/>}
+        </button>
+      ))}
+    </nav>
+  );
+}
+function Header({user,onLogout}){
+  return(
+    <header style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:'10px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',direction:'rtl',position:'sticky',top:0,zIndex:200,boxShadow:'0 2px 8px rgba(0,0,0,.04)'}}>
+      <div style={{display:'flex',alignItems:'center',gap:10}}>
+        <img src={LOGO} alt="" style={{height:44,width:'auto'}}/>
+        <div>
+          <div style={{color:C.teal,fontWeight:800,fontSize:14,lineHeight:1.2}}>سباق القرّاء الصيفي ١</div>
+          <div style={{color:C.muted,fontSize:10}}>مجمع الفلاح التعليمي</div>
+        </div>
+      </div>
+      {user&&(
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{textAlign:'left',direction:'ltr'}}>
+            <div style={{color:C.text,fontWeight:700,fontSize:11}}>{user.name?.split(' ')[0]}</div>
+            <div style={{color:C.muted,fontSize:9}}>{user.group}</div>
+          </div>
+          <button onClick={onLogout} style={{background:C.grayBg,border:`1px solid ${C.border}`,color:C.muted,borderRadius:8,padding:'4px 9px',cursor:'pointer',fontSize:10}}>خروج</button>
+        </div>
+      )}
+    </header>
+  );
+}
+export default function App(){
+  const[page,setPage]=useState('home');
+  const[user,setUser]=useState(null);
+  const[adminMode,setAdminMode]=useState(false);
+  const[loading,setLoading]=useState(true);
+  const[students,setStudents]=useState([]);
+  const[pendingReadings,setPendingReadings]=useState([]);
+  const[pendingRegs,setPendingRegs]=useState([]);
+  const[benefits,setBenefits]=useState([]);
+  const[topBenefit,setTopBenefit]=useState(null);
+  useEffect(()=>{
+    const unsub=FB.onAuthChange(async firebaseUser=>{
+      if(firebaseUser){
+        try{
+          const snap=await FB.getUser(firebaseUser.uid);
+          if(snap.exists()){
+            const data={id:firebaseUser.uid,...snap.data()};
+            if(data.rejected){
+              await FB.fbLogout();
+              setUser(null);setAdminMode(false);
+              setLoading(false);
+              alert('❌ تم رفض طلب تسجيلك. تواصل مع المشرف.');
+              return;
+            }
+            if(data.role==='admin'){
+              setAdminMode(true);setUser(null);
+            } else if(data.approved){
+              setUser(data);setAdminMode(false);
+            } else {
+              await FB.fbLogout();
+              setUser(null);setAdminMode(false);
+              setLoading(false);
+              alert('⏳ حسابك في انتظار موافقة المشرف. حاول تسجيل الدخول لاحقاً.');
+              return;
+            }
+          } else {
+            setLoading(false);
+          }
+        }catch(e){
+          console.error('Auth error:',e);
+          await FB.fbLogout();
+        }
+      } else {
+        setUser(null);setAdminMode(false);
+      }
+      setLoading(false);
+    });
+    return()=>unsub();
+  },[]);
+  useEffect(()=>{
+    const subs=[
+      FB.listenStudents(setStudents),
+      FB.listenApprovedReadings(setBenefits),
+      FB.listenTopBenefit(setTopBenefit),
+    ];
+    if(adminMode){
+      subs.push(FB.listenPendingReadings(setPendingReadings));
+      subs.push(FB.listenPendingRegs(setPendingRegs));
+    }
+    return()=>subs.forEach(u=>u());
+  },[adminMode]);
+  const handleLogout=async()=>{await FB.fbLogout();setPage('home');};
+  const needsAuth=(page==='card'||page==='add')&&!user&&!adminMode;
+  const fbConfigMissing=!import.meta.env.VITE_FIREBASE_API_KEY||import.meta.env.VITE_FIREBASE_API_KEY==='your_api_key_here';
+  if(fbConfigMissing)return(
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#FEF2F2',padding:24}}>
+      <div style={{textAlign:'center',maxWidth:480}}>
+        <div style={{fontSize:52,marginBottom:12}}>⚙️</div>
+        <h2 style={{color:'#DC2626',fontWeight:800}}>Firebase غير مضبوط</h2>
+      </div>
+    </div>
+  );
+  if(loading)return(
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:C.bg}}>
+      <div style={{textAlign:'center'}}>
+        <img src={LOGO} alt="" style={{height:60,marginBottom:16,animation:'pulse 1.5s ease-in-out infinite'}}/>
+        <div style={{color:C.teal,fontWeight:700,fontSize:14}}>جارٍ التحميل...</div>
+        <div style={{color:C.muted,fontSize:11,marginTop:4}}>مجمع الفلاح التعليمي</div>
+      </div>
+    </div>
+  );
+  return(
+    <div style={{minHeight:'100vh',background:C.bg,color:C.text,fontFamily:"'Cairo','Tajawal','Segoe UI',Arial,sans-serif"}}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+        *{box-sizing:border-box;}body{margin:0;}
+        ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:${C.grayL};border-radius:2px;}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.1}}
+        @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.7;transform:scale(.95)}}
+        input::placeholder,textarea::placeholder{color:${C.muted};}
+        button:active{transform:scale(.97);}
+        select option{color:${C.text};}
+      `}</style>
+      {adminMode?(
+        <>
+          <div style={{background:C.teal,padding:'10px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',direction:'rtl',position:'sticky',top:0,zIndex:200}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}>
+              <img src={LOGO} alt="" style={{height:34,filter:'brightness(0) invert(1)'}}/>
+              <span style={{color:C.white,fontWeight:800,fontSize:14}}>⚙️ وضع الإشراف</span>
+            </div>
+            <button onClick={handleLogout} style={{background:'rgba(255,255,255,.2)',color:C.white,border:'none',borderRadius:8,padding:'5px 12px',cursor:'pointer',fontSize:12}}>خروج</button>
+          </div>
+          <AdminPage
+            students={students}
+            pendingReadings={pendingReadings}
+            pendingRegs={pendingRegs}
+            benefits={benefits}
+            topBenefit={topBenefit}
+            setTopBenefit={setTopBenefit}/>
+        </>
+      ):(
+        <>
+          <Header user={user} onLogout={handleLogout}/>
+          <main>
+            {needsAuth
+              ?<AuthScreen onAdminLogin={()=>setAdminMode(true)}/>
+              :(
+                <>
+                  {page==='home'&&<HomePage students={students} pendingReadings={pendingReadings} benefits={benefits} topBenefit={topBenefit}/>}
+                  {page==='race'&&<RacePage students={students}/>}
+                  {page==='add'&&<AddPage user={user}/>}
+                  {page==='card'&&<CardPage user={user} students={students} benefits={benefits}/>}
+                </>
+              )
+            }
+          </main>
+          <BottomNav page={page} setPage={setPage}/>
+          <div style={{height:70}}/>
+        </>
+      )}
+    </div>
+  );
+}

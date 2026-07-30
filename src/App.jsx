@@ -537,7 +537,7 @@ function AuthScreen({onAdminLogin}){
     setLoading(true);setErr('');
     try{
       if(mode==='login'){
-        await FB.fbLogin(form.email.trim(),form.password);
+        await FB.fbLogin(form.email.trim().toLowerCase()),form.password);
       } else {
         const email=form.email.trim().toLowerCase();
         const isAdmin=email===FB.ADMIN_EMAIL;

@@ -570,7 +570,8 @@ function AuthScreen({onAdminLogin}){
     }catch(e){
       const msgs={'auth/user-not-found':'البريد غير مسجل','auth/wrong-password':'كلمة المرور خاطئة','auth/email-already-in-use':'البريد مستخدم مسبقاً','auth/weak-password':'كلمة المرور ضعيفة (٦ أحرف على الأقل)','auth/invalid-email':'صيغة البريد غير صحيحة'};
       setErr(msgs[e.code]||'حدث خطأ، حاول مجدداً');
-    }
+    alert('كود الخطأ: ' + e.code);}
+
     setLoading(false);
   };
   return(

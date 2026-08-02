@@ -537,8 +537,7 @@ function AuthScreen({onAdminLogin}){
     setLoading(true);setErr('');
     try{
       if(mode==='login'){
-        await FB.fbLogin(form.email.trim().toLowerCase()),form.password);
-      } else {
+await FB.fbLogin(form.email.trim().toLowerCase(), form.password);
         const email=form.email.trim().toLowerCase();
         const isAdmin=email===FB.ADMIN_EMAIL;
         if(!form.name.trim()||(!isAdmin&&!form.group)){

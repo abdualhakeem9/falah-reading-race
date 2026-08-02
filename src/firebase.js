@@ -30,8 +30,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = initializeFirestore(app, {
-  host: 'me-central2-firestore.googleapis.com',
-  ssl: true,
   experimentalAutoDetectLongPolling: true,
   useFetchStreams: false,
 });

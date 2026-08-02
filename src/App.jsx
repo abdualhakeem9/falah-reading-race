@@ -537,35 +537,39 @@ function AuthScreen({onAdminLogin}){
     setLoading(true);setErr('');
     try{
       if(mode==='login'){
-await FB.fbLogin(form.email.trim().toLowerCase(), form.password);
-        const email=form.email.trim().toLowerCase();
-        const isAdmin=email===FB.ADMIN_EMAIL;
-        if(!form.name.trim()||(!isAdmin&&!form.group)){
-          setErr('أكمل جميع الحقول');setLoading(false);return;
-        }
-        const cred=await FB.fbRegister(email,form.password);
-        const uid=cred.user.uid;
-        await FB.saveUser(uid,{
-          name:form.name.trim(),
-          email,
-          group:isAdmin?'المشرف':form.group,
-          km:0,
-          role:isAdmin?'admin':'student',
-          approved:isAdmin,
-          createdAt:new Date().toISOString(),
-        });
-        if(!isAdmin){
-          await FB.addPendingReg(uid,{name:form.name.trim(),email,group:form.group});
-          await FB.fbLogout();
-          setLoading(false);
-          setForm({name:'',email:'',password:'',group:''});
-          setErr('');setMode('login');
-          alert('✅ تم التسجيل! انتظر موافقة المشرف ثم سجّل دخولك.');
-          return;
-        }
-        window.location.reload();
+        await FB.fbLogin(form.email.trim().toLowerCase(), form.password);
+        setLoading(false);
         return;
       }
+
+      // ===== إنشاء حساب =====
+      const email=form.email.trim().toLowerCase();
+      const isAdmin=email===FB.ADMIN_EMAIL;
+      if(!form.name.trim()||(!isAdmin&&!form.group)){
+        setErr('أكمل جميع الحقول');setLoading(false);return;
+      }
+      const cred=await FB.fbRegister(email,form.password);
+      const uid=cred.user.uid;
+      await FB.saveUser(uid,{
+        name:form.name.trim(),
+        email,
+        group:isAdmin?'المشرف':form.group,
+        km:0,
+        role:isAdmin?'admin':'student',
+        approved:isAdmin,
+        createdAt:new Date().toISOString(),
+      });
+      if(!isAdmin){
+        await FB.addPendingReg(uid,{name:form.name.trim(),email,group:form.group});
+        await FB.fbLogout();
+        setLoading(false);
+        setForm({name:'',email:'',password:'',group:''});
+        setErr('');setMode('login');
+        alert('✅ تم التسجيل! انتظر موافقة المشرف ثم سجّل دخولك.');
+        return;
+      }
+      window.location.reload();
+      return;
     }catch(e){
       const msgs={'auth/user-not-found':'البريد غير مسجل','auth/wrong-password':'كلمة المرور خاطئة','auth/email-already-in-use':'البريد مستخدم مسبقاً','auth/weak-password':'كلمة المرور ضعيفة (٦ أحرف على الأقل)','auth/invalid-email':'صيغة البريد غير صحيحة'};
       setErr(msgs[e.code]||'حدث خطأ، حاول مجدداً');

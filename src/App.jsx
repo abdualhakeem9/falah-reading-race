@@ -4,6 +4,7 @@ import * as FB from './firebase';
 const LOGO = '/logo.png';
 const MAX_PAGES = 50;
 const BONUS_KM  = 30;
+const SUGGESTED_MULTIPLIER = 1.5;
 
 const C = {
   teal:'#6199AF',tealL:'#8CBACF',tealD:'#3D6F88',tealBg:'#EBF4F8',tealBg2:'#D4E9F2',
@@ -14,12 +15,25 @@ const C = {
   orange:'#D97706',orangeBg:'#FFFBEB',
 };
 const MC=['#C9A227','#9CA3AF','#CD7F32'];
+
 const HEATS=[
-  {id:1,name:'التروّي',emoji:'🌿',start:new Date('2026-07-25T00:00:00'),end:new Date('2026-07-29T23:59:59'),target:500},
-  {id:2,name:'الإسراع',emoji:'⚡',start:new Date('2026-07-30T00:00:00'),end:new Date('2026-08-05T23:59:59'),target:1000},
-  {id:3,name:'الاندفاع',emoji:'🔥',start:new Date('2026-08-06T00:00:00'),end:new Date('2026-08-12T23:59:59'),target:1500},
+  {id:1,name:'التروّي',emoji:'🌿',start:new Date('2026-07-31T00:00:00'),end:new Date('2026-08-04T23:59:59'),target:500},
+  {id:2,name:'الإسراع',emoji:'⚡',start:new Date('2026-08-05T00:00:00'),end:new Date('2026-08-11T23:59:59'),target:1000},
+  {id:3,name:'الاندفاع',emoji:'🔥',start:new Date('2026-08-12T00:00:00'),end:new Date('2026-08-18T23:59:59'),target:1500},
 ];
+
 const GROUPS=['حلقة أولى متوسط','حلقة القويز','حلقة الحمراء','حلقة أولى ثانوي','حلقة ثاني ثانوي','حلقة ثالث ثانوي'];
+
+// الكتب المقترحة — أضفها هنا
+// { title:'اسم الكتاب', author:'المؤلف', pages:120, pdf:'رابط' }
+const BOOKS = [
+];
+
+// أسماء الطلاب المعتمدة — تُضاف لاحقاً
+// { name:'الاسم الكامل', group:'حلقة القويز' }
+const ROSTER = [
+];
+
 const QUOTES=[
   {t:'اقْرَأْ بِاسْمِ رَبِّكَ الَّذِي خَلَقَ',s:'سورة العلق'},
   {t:'الكتاب خيرُ جليسٍ في الزمان',s:'حكمة'},
@@ -34,6 +48,7 @@ function getActiveHeat(){
   return{heat:HEATS[2],status:'done'};
 }
 function getHeatStatus(h){const n=Date.now();if(n<h.start)return'upcoming';if(n>h.end)return'done';return'active';}
+
 function useCountdownTo(target){
   const[t,setT]=useState({d:0,h:0,m:0,s:0});
   useEffect(()=>{
@@ -75,7 +90,7 @@ function SmartCountdown(){
   const{heat,status}=getActiveHeat();
   const target=status==='active'?heat.end:status==='upcoming'?heat.start:null;
   const{d,h,m,s}=useCountdownTo(target);
-  if(!target)return<div style={{textAlign:'center',color:C.muted,padding:16}}>🏁 انتهى سباق القرّاء الصيفي ١</div>;
+  if(!target)return<div style={{textAlign:'center',color:C.muted,padding:16}}>🏁 انتهى سباق القرّاء الصيفي 1</div>;
   const label=status==='active'?`حتى نهاية ${heat.name}`:`حتى انطلاق ${heat.name}`;
   return(
     <div style={{textAlign:'center'}}>
@@ -124,6 +139,7 @@ function CircleRing({rank,firstName,km,pct,color}){
     </div>
   );
 }
+
 function KnowledgeRings({students}){
   const{heat}=getActiveHeat();const maxKm=heat?.target||500;
   const rc=i=>i===0?C.gold:i<3?MC[i]:C.teal;
@@ -142,7 +158,7 @@ function KnowledgeRings({students}){
         </span>
       </div>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(92px,1fr))',gap:14}}>
-        {students.map((st,i)=><CircleRing key={st.id} rank={i+1} firstName={st.name.split(' ')[0]} km={st.km||0} pct={Math.min(((st.km||0)/maxKm)*100,100)} color={rc(i)}/>)}
+        {students.map((st,i)=><CircleRing key={st.id} rank={i+1} firstName={(st.name||'').split(' ')[0]} km={st.km||0} pct={Math.min(((st.km||0)/maxKm)*100,100)} color={rc(i)}/>)}
       </div>
       <div style={{textAlign:'center',marginTop:14,color:C.muted,fontSize:10,borderTop:`1px solid ${C.border}`,paddingTop:10}}>
         كلما اتسعت دائرة معرفتك، كلما اقتربت من الفلاح
@@ -187,7 +203,7 @@ function GroupsBoard({students}){
         <div key={g.id} style={{marginBottom:9,padding:11,background:i===0&&g.km>0?C.tealBg:C.grayBg,borderRadius:11,border:`1px solid ${i===0&&g.km>0?C.tealL+'55':C.border}`}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:g.km>0?7:0}}>
             <div style={{display:'flex',alignItems:'center',gap:7}}>
-              <span style={{fontSize:15}}>{['🥇','🥈','🥉','٤','٥','٦'][i]}</span>
+              <span style={{fontSize:15}}>{['🥇','🥈','🥉','4','5','6'][i]}</span>
               <div>
                 <div style={{color:C.text,fontWeight:700,fontSize:12}}>{g.name}</div>
                 {g.n>0&&<div style={{color:C.muted,fontSize:9}}>{g.n} فارس</div>}
@@ -243,7 +259,7 @@ function HomePage({students,pendingReadings,benefits,topBenefit}){
   return(
     <div style={{maxWidth:900,margin:'0 auto',padding:'20px 16px 90px',direction:'rtl'}}>
       <div style={{textAlign:'center',padding:'22px 0 18px'}}>
-        <h1 style={{color:C.teal,fontSize:'clamp(20px,5vw,36px)',fontWeight:900,margin:'0 0 4px'}}>سباق القرّاء الصيفي ١ 🏁</h1>
+        <h1 style={{color:C.teal,fontSize:'clamp(20px,5vw,36px)',fontWeight:900,margin:'0 0 4px'}}>سباق القرّاء الصيفي 1 🏁</h1>
         <p style={{color:C.gray,fontSize:12,margin:'0 0 18px'}}>مجمع الفلاح التعليمي</p>
         <SmartCountdown/>
       </div>
@@ -259,7 +275,7 @@ function HomePage({students,pendingReadings,benefits,topBenefit}){
       )}
       <QuoteCard/>
       <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
-        {[[students.length,'فارس','🏃'],[GROUPS.length,'حلقة','🏟️'],[students.reduce((a,s)=>a+(s.km||0),0).toLocaleString('ar-SA'),'كم إجمالي','📏']].map(([v,l,ic])=>(
+        {[[students.length,'فارس','🏃'],[GROUPS.length,'حلقة','🏟️'],[students.reduce((a,s)=>a+(s.km||0),0),'كم إجمالي','📏']].map(([v,l,ic])=>(
           <div key={l} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:12,textAlign:'center'}}>
             <div style={{fontSize:20}}>{ic}</div>
             <div style={{color:C.teal,fontSize:20,fontWeight:800}}>{v}</div>
@@ -290,15 +306,64 @@ function RacePage({students}){
   );
 }
 
+function BooksPage(){
+  return(
+    <div style={{maxWidth:820,margin:'0 auto',padding:'20px 16px 90px',direction:'rtl'}}>
+      <h2 style={{color:C.teal,fontWeight:900,fontSize:22,margin:'0 0 8px'}}>📖 الكتب المقترحة</h2>
+      <div style={{background:C.goldBg,border:`1.5px solid ${C.gold}55`,borderRadius:12,padding:'11px 14px',marginBottom:18,fontSize:12,color:'#92400E',lineHeight:1.8}}>
+        ⭐ صفحات هذه الكتب تُحتسب بـ <b>{SUGGESTED_MULTIPLIER} كم للصفحة</b> بدلاً من 1 كم — اقرأ منها واكسب مسافة أكبر
+      </div>
+      {BOOKS.length===0?(
+        <div style={{background:C.white,border:`1px dashed ${C.border}`,borderRadius:16,padding:'44px 24px',textAlign:'center'}}>
+          <div style={{fontSize:44,marginBottom:10}}>📚</div>
+          <div style={{color:C.text,fontSize:15,fontWeight:700,marginBottom:6}}>القائمة قيد الإعداد</div>
+          <div style={{color:C.muted,fontSize:12,lineHeight:1.8}}>ستُنشر هنا قائمة الكتب المختارة مع روابط القراءة</div>
+        </div>
+      ):(
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(240px,1fr))',gap:12}}>
+          {BOOKS.map((b,i)=>(
+            <div key={i} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:14,padding:16,display:'flex',flexDirection:'column',gap:6}}>
+              <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
+                <span style={{fontSize:22,lineHeight:1}}>📕</span>
+                <div style={{flex:1}}>
+                  <div style={{color:C.text,fontWeight:800,fontSize:14,lineHeight:1.5}}>{b.title}</div>
+                  {b.author&&<div style={{color:C.muted,fontSize:11,marginTop:2}}>{b.author}</div>}
+                </div>
+              </div>
+              {b.pages&&(
+                <div style={{color:C.teal,fontSize:11,fontWeight:700}}>
+                  {b.pages} صفحة · {Math.round(b.pages*SUGGESTED_MULTIPLIER)} كم كاملاً
+                </div>
+              )}
+              {b.pdf&&(
+                <a href={b.pdf} target="_blank" rel="noreferrer"
+                  style={{marginTop:4,padding:'8px 12px',background:C.tealBg,color:C.tealD,border:`1px solid ${C.tealL}55`,borderRadius:9,fontSize:12,fontWeight:700,textAlign:'center',textDecoration:'none'}}>
+                  فتح الكتاب ↗
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AddPage({user}){
   const[book,setBook]=useState('');
+  const[picked,setPicked]=useState('');
   const[pages,setPages]=useState('');
   const[benefit,setBenefit]=useState('');
   const[sent,setSent]=useState(false);
   const[loading,setLoading]=useState(false);
   const[errors,setErrors]=useState({});
+
   const p=parseInt(pages)||0;
+  const isSuggested=!!picked;
+  const km=isSuggested?Math.round(p*SUGGESTED_MULTIPLIER):p;
+
   const inp={padding:'11px 14px',background:C.grayBg,border:`1px solid ${C.border}`,borderRadius:10,color:C.text,fontSize:13,outline:'none',direction:'rtl',width:'100%',boxSizing:'border-box'};
+
   const validate=()=>{
     const e={};
     if(!book.trim())e.book='أدخل اسم الكتاب';
@@ -307,41 +372,66 @@ function AddPage({user}){
     if(!benefit.trim()||benefit.trim().length<20)e.benefit='اكتب فائدة مفيدة (٢٠ حرف على الأقل)';
     return e;
   };
+
   const submit=async()=>{
     const e=validate();
     if(Object.keys(e).length){setErrors(e);return;}
     setLoading(true);
     try{
-      await FB.addReading({student:user.name,studentId:user.id,book:book.trim(),pages:p,km:p,benefit:benefit.trim(),group:user.group,date:new Date().toLocaleDateString('ar-SA-u-nu-latn')});
-      setSent(true);setBook('');setPages('');setBenefit('');setErrors({});
+      await FB.addReading({
+        student:user.name,studentId:user.id,
+        book:book.trim(),pages:p,km,
+        suggested:isSuggested,
+        benefit:benefit.trim(),group:user.group,
+        date:new Date().toLocaleDateString('ar-SA-u-nu-latn'),
+      });
+      setSent(true);setBook('');setPicked('');setPages('');setBenefit('');setErrors({});
       setTimeout(()=>setSent(false),4000);
-    }catch(err){alert('حدث خطأ، حاول مجدداً');}
+    }catch(err){alert('تعذّر إرسال القراءة. تحقق من الاتصال وأعد المحاولة.');}
     setLoading(false);
   };
+
+  const onPick=v=>{setPicked(v);setBook(v||'');};
+
   return(
     <div style={{maxWidth:680,margin:'0 auto',padding:'20px 16px 90px',direction:'rtl'}}>
       <h2 style={{color:C.teal,fontWeight:900,fontSize:22,margin:'0 0 14px'}}>📚 سجّل قراءتك</h2>
       <div style={{background:C.tealBg,border:`1px solid ${C.tealL}55`,borderRadius:12,padding:'10px 14px',marginBottom:16,fontSize:12,color:C.tealD,lineHeight:1.8}}>
-        ١ كم لكل صفحة • الحد الأقصى <b>{MAX_PAGES} صفحة</b> لكل إدخال
+        1 كم لكل صفحة · الكتب المقترحة {SUGGESTED_MULTIPLIER} كم للصفحة · الحد الأقصى <b>{MAX_PAGES} صفحة</b> لكل إدخال
       </div>
       {sent?(
         <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:'40px 24px',textAlign:'center'}}>
           <div style={{fontSize:48}}>✅</div>
-          <div style={{color:C.green,fontWeight:700,fontSize:17,marginTop:12}}>تم إرسال قراءتك للمراجعة!</div>
-          <button onClick={()=>setSent(false)} style={{marginTop:14,padding:'9px 22px',background:C.teal,color:C.white,border:'none',borderRadius:10,cursor:'pointer',fontSize:13,fontWeight:700}}>إضافة قراءة أخرى</button>
+          <div style={{color:C.green,fontWeight:700,fontSize:17,marginTop:12}}>أُرسلت قراءتك للمراجعة</div>
+          <button onClick={()=>setSent(false)} style={{marginTop:14,padding:'9px 22px',background:C.teal,color:C.white,border:'none',borderRadius:10,cursor:'pointer',fontSize:13,fontWeight:700}}>تسجيل قراءة أخرى</button>
         </div>
       ):(
         <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:22,display:'flex',flexDirection:'column',gap:14}}>
+          {BOOKS.length>0&&(
+            <div>
+              <label style={{display:'block',color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>⭐ من الكتب المقترحة <span style={{color:C.muted,fontWeight:400}}>(اختياري)</span></label>
+              <select value={picked} onChange={e=>onPick(e.target.value)} style={{...inp,color:picked?C.text:C.muted}}>
+                <option value="">كتاب من خارج القائمة</option>
+                {BOOKS.map(b=><option key={b.title} value={b.title}>{b.title}</option>)}
+              </select>
+            </div>
+          )}
           <div>
             <label style={{display:'block',color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>📖 اسم الكتاب *</label>
-            <input placeholder="مثال: قصص الأنبياء" value={book} onChange={e=>setBook(e.target.value)} style={{...inp,borderColor:errors.book?C.red:C.border}}/>
+            <input placeholder="مثال: قصص الأنبياء" value={book} disabled={isSuggested}
+              onChange={e=>setBook(e.target.value)}
+              style={{...inp,borderColor:errors.book?C.red:C.border,opacity:isSuggested?.7:1}}/>
             {errors.book&&<div style={{color:C.red,fontSize:11,marginTop:4}}>{errors.book}</div>}
           </div>
           <div>
             <label style={{display:'block',color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>📄 عدد الصفحات * <span style={{color:C.muted,fontWeight:400}}>(حد أقصى {MAX_PAGES})</span></label>
             <input type="number" min="1" max={MAX_PAGES} value={pages} onChange={e=>setPages(e.target.value)} style={{...inp,borderColor:errors.pages?C.red:C.border}}/>
             {errors.pages&&<div style={{color:C.red,fontSize:11,marginTop:4}}>{errors.pages}</div>}
-            {p>0&&p<=MAX_PAGES&&<div style={{color:C.teal,fontSize:11,marginTop:4,fontWeight:600}}>{p} صفحة = {p} كم ✓</div>}
+            {p>0&&p<=MAX_PAGES&&(
+              <div style={{color:isSuggested?C.gold:C.teal,fontSize:11,marginTop:4,fontWeight:600}}>
+                {p} صفحة = {km} كم {isSuggested?`⭐ (×${SUGGESTED_MULTIPLIER} كتاب مقترح)`:'✓'}
+              </div>
+            )}
           </div>
           <div>
             <label style={{display:'block',color:C.text,fontSize:13,fontWeight:600,marginBottom:6}}>💡 أجمل فائدة استفدتها *</label>
@@ -352,7 +442,7 @@ function AddPage({user}){
             </div>
           </div>
           <button onClick={submit} disabled={loading} style={{padding:13,background:loading?C.grayL:C.teal,color:C.white,border:'none',borderRadius:12,fontSize:15,fontWeight:800,cursor:loading?'not-allowed':'pointer'}}>
-            {loading?'جارٍ الإرسال...':`إرسال للمراجعة${p>0&&p<=MAX_PAGES?` (${p} كم)`:''}`}
+            {loading?'جارٍ الإرسال...':`إرسال للمراجعة${p>0&&p<=MAX_PAGES?` (${km} كم)`:''}`}
           </button>
         </div>
       )}
@@ -397,7 +487,7 @@ function CardPage({user,students,benefits}){
           <div style={{background:C.grayBg,borderRadius:6,height:10,overflow:'hidden',border:`1px solid ${C.border}`}}>
             <div style={{height:'100%',width:`${pct}%`,background:`linear-gradient(to left,${C.teal},${C.tealL})`,borderRadius:6}}/>
           </div>
-          <div style={{color:C.muted,fontSize:10,marginTop:3}}>{km} كم من {maxKm.toLocaleString()} كم</div>
+          <div style={{color:C.muted,fontSize:10,marginTop:3}}>{km} كم من {maxKm} كم</div>
         </>}
       </div>
       {myBenefits.length>0&&(
@@ -414,25 +504,24 @@ function CardPage({user,students,benefits}){
     </div>
   );
 }
-function AdminPage({students,pendingReadings,pendingRegs,benefits,topBenefit,setTopBenefit}){
+
+function AdminPage({students,pendingReadings,benefits,topBenefit}){
   const[tab,setTab]=useState('pending');
   const[saving,setSaving]=useState(null);
   const thS={padding:'9px 12px',color:C.muted,fontSize:11,fontWeight:600,textAlign:'right',background:C.grayBg};
   const tdS=(c=C.text)=>({padding:'9px 12px',color:c,fontSize:12,borderTop:`1px solid ${C.border}`});
   const approve=async(r)=>{setSaving(r.id);await FB.approveReading(r.id,r.studentId,r.km);setSaving(null);};
   const reject=async(id)=>{setSaving(id);await FB.rejectReading(id);setSaving(null);};
-  const approveReg=async(r)=>{setSaving(r.id);await FB.approveRegistration(r.id,r.uid);setSaving(null);};
-  const rejectReg=async(r)=>{setSaving(r.id);await FB.rejectRegistration(r.id,r.uid);setSaving(null);};
   const pickTop=async(b)=>{setSaving('top');await FB.setTopBenefit({...b,pickedAt:new Date().toISOString()});if(b.studentId)await FB.awardKm(b.studentId,BONUS_KM);setSaving(null);};
   const clearTop=async()=>{setSaving('top');await FB.clearTopBenefit();setSaving(null);};
   return(
     <div style={{maxWidth:960,margin:'0 auto',padding:'16px 16px 90px',direction:'rtl'}}>
       <div style={{background:C.teal,borderRadius:14,padding:'13px 18px',marginBottom:18,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
         <div style={{color:C.white,fontWeight:800,fontSize:15}}>⚙️ لوحة الإشراف</div>
-        <div style={{color:'rgba(255,255,255,.7)',fontSize:11}}>سباق القرّاء الصيفي ١</div>
+        <div style={{color:'rgba(255,255,255,.7)',fontSize:11}}>سباق القرّاء الصيفي 1</div>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:16}}>
-        {[[students.length,'فارس','🏃'],[students.reduce((a,s)=>a+(s.km||0),0),'كم','📏'],[pendingReadings.length,'قراءة معلقة','⏳'],[pendingRegs.length,'تسجيل معلق','👤']].map(([v,l,ic])=>(
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
+        {[[students.length,'فارس','🏃'],[students.reduce((a,s)=>a+(s.km||0),0),'كم','📏'],[pendingReadings.length,'قراءة معلقة','⏳']].map(([v,l,ic])=>(
           <div key={l} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:'13px 10px',textAlign:'center'}}>
             <div style={{fontSize:22}}>{ic}</div>
             <div style={{color:C.teal,fontSize:22,fontWeight:800,margin:'3px 0 2px'}}>{v}</div>
@@ -441,7 +530,7 @@ function AdminPage({students,pendingReadings,pendingRegs,benefits,topBenefit,set
         ))}
       </div>
       <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
-        {[['pending',`⏳ قراءات (${pendingReadings.length})`],['regs',`👤 تسجيلات (${pendingRegs.length})`],['top','🌟 أجمل فائدة'],['students','🏃 الطلاب'],['groups','🏟️ الحلقات']].map(([t,l])=>(
+        {[['pending',`⏳ قراءات (${pendingReadings.length})`],['top','🌟 أجمل فائدة'],['students','🏃 الطلاب'],['groups','🏟️ الحلقات']].map(([t,l])=>(
           <button key={t} onClick={()=>setTab(t)} style={{padding:'6px 12px',background:tab===t?C.teal:C.white,color:tab===t?C.white:C.gray,border:`1.5px solid ${tab===t?C.teal:C.border}`,borderRadius:8,cursor:'pointer',fontSize:11,fontWeight:600}}>{l}</button>
         ))}
       </div>
@@ -452,7 +541,9 @@ function AdminPage({students,pendingReadings,pendingRegs,benefits,topBenefit,set
             <div key={r.id} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:14}}>
               <div style={{display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
                 <div style={{flex:1}}>
-                  <div style={{color:C.text,fontWeight:700,fontSize:13}}>{r.book}</div>
+                  <div style={{color:C.text,fontWeight:700,fontSize:13}}>
+                    {r.book}{r.suggested&&<span style={{color:C.gold,fontSize:11,marginRight:6}}>⭐ مقترح</span>}
+                  </div>
                   <div style={{color:C.muted,fontSize:11,marginTop:2}}>{r.student} • {r.pages} صفحة • {r.km} كم • {r.date}</div>
                   <div style={{background:C.tealBg,borderRadius:8,padding:'8px 10px',marginTop:8,color:C.tealD,fontSize:12,lineHeight:1.6}}>
                     💡 "{r.benefit}"
@@ -466,27 +557,6 @@ function AdminPage({students,pendingReadings,pendingRegs,benefits,topBenefit,set
                     {saving===r.id?'...':'✗ رفض'}
                   </button>
                 </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {tab==='regs'&&(
-        <div style={{display:'flex',flexDirection:'column',gap:8}}>
-          {pendingRegs.length===0?<div style={{textAlign:'center',padding:'40px',color:C.muted}}><div style={{fontSize:40}}>👤</div><p>لا توجد طلبات تسجيل</p></div>:
-          pendingRegs.map(r=>(
-            <div key={r.id} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:14,display:'flex',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
-              <div>
-                <div style={{color:C.text,fontWeight:700,fontSize:13}}>{r.name}</div>
-                <div style={{color:C.muted,fontSize:11,marginTop:2}}>{r.email} • {r.group}</div>
-              </div>
-              <div style={{display:'flex',gap:6}}>
-                <button onClick={()=>approveReg(r)} disabled={saving===r.id} style={{padding:'5px 12px',background:C.greenBg,color:C.green,border:`1px solid #86EFAC`,borderRadius:7,cursor:'pointer',fontSize:11,fontWeight:700}}>
-                  {saving===r.id?'...':'✓ قبول'}
-                </button>
-                <button onClick={()=>rejectReg(r)} disabled={saving===r.id} style={{padding:'5px 12px',background:C.redBg,color:C.red,border:`1px solid #FCA5A5`,borderRadius:7,cursor:'pointer',fontSize:11,fontWeight:700}}>
-                  {saving===r.id?'...':'✗ رفض'}
-                </button>
               </div>
             </div>
           ))}
@@ -525,64 +595,62 @@ function AdminPage({students,pendingReadings,pendingRegs,benefits,topBenefit,set
     </div>
   );
 }
-function AuthScreen({onAdminLogin}){
+
+function AuthScreen(){
   const[mode,setMode]=useState('login');
   const[form,setForm]=useState({name:'',email:'',password:'',group:''});
   const[err,setErr]=useState('');
   const[loading,setLoading]=useState(false);
   const set=k=>e=>setForm(f=>({...f,[k]:e.target.value}));
   const inp={padding:'11px 14px',background:C.grayBg,border:`1px solid ${C.border}`,borderRadius:10,color:C.text,fontSize:13,outline:'none',direction:'rtl',width:'100%',boxSizing:'border-box'};
+
+  const MSGS={
+    'auth/user-not-found':'البريد غير مسجل',
+    'auth/wrong-password':'كلمة المرور خاطئة',
+    'auth/invalid-credential':'البريد أو كلمة المرور غير صحيحة',
+    'auth/too-many-requests':'محاولات كثيرة — انتظر دقيقة ثم أعد المحاولة',
+    'auth/email-already-in-use':'هذا البريد له حساب — استخدم تسجيل الدخول',
+    'auth/weak-password':'كلمة المرور ضعيفة (6 أحرف على الأقل)',
+    'auth/invalid-email':'صيغة البريد غير صحيحة',
+    'auth/network-request-failed':'تعذّر الاتصال بالإنترنت',
+  };
+
   const submit=async()=>{
     if(!form.email.trim()||!form.password){setErr('أدخل البريد وكلمة المرور');return;}
     setLoading(true);setErr('');
+    const email=form.email.trim().toLowerCase();
     try{
       if(mode==='login'){
-        await FB.fbLogin(form.email.trim().toLowerCase(), form.password);
-        setLoading(false);
+        await FB.fbLogin(email,form.password);
         return;
       }
-
-      // ===== إنشاء حساب =====
-      const email=form.email.trim().toLowerCase();
       const isAdmin=email===FB.ADMIN_EMAIL;
       if(!form.name.trim()||(!isAdmin&&!form.group)){
         setErr('أكمل جميع الحقول');setLoading(false);return;
       }
       const cred=await FB.fbRegister(email,form.password);
-      const uid=cred.user.uid;
-      await FB.saveUser(uid,{
+      await FB.saveUser(cred.user.uid,{
         name:form.name.trim(),
         email,
         group:isAdmin?'المشرف':form.group,
         km:0,
         role:isAdmin?'admin':'student',
-        approved:isAdmin,
+        approved:true,
         createdAt:new Date().toISOString(),
       });
-      if(!isAdmin){
-        await FB.addPendingReg(uid,{name:form.name.trim(),email,group:form.group});
-        await FB.fbLogout();
-        setLoading(false);
-        setForm({name:'',email:'',password:'',group:''});
-        setErr('');setMode('login');
-        alert('✅ تم التسجيل! انتظر موافقة المشرف ثم سجّل دخولك.');
-        return;
-      }
-      window.location.reload();
       return;
     }catch(e){
-      const msgs={'auth/user-not-found':'البريد غير مسجل','auth/wrong-password':'كلمة المرور خاطئة','auth/invalid-credential':'البريد أو كلمة المرور غير صحيحة','auth/too-many-requests':'محاولات كثيرة، انتظر قليلاً','auth/email-already-in-use':'البريد مستخدم مسبقاً','auth/weak-password':'كلمة المرور ضعيفة (٦ أحرف على الأقل)','auth/invalid-email':'صيغة البريد غير صحيحة','auth/network-request-failed':'مشكلة في الاتصال بالإنترنت'};
-      setErr(msgs[e.code]||'حدث خطأ، حاول مجدداً');
+      setErr(MSGS[e.code]||'تعذّر إتمام العملية — أعد المحاولة');
+      setLoading(false);
     }
-
-    setLoading(false);
   };
+
   return(
     <div style={{maxWidth:400,margin:'30px auto',padding:'0 16px',direction:'rtl'}}>
       <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:20,padding:'26px 20px',boxShadow:'0 4px 20px rgba(0,0,0,.07)'}}>
         <div style={{textAlign:'center',marginBottom:20}}>
-          <img src={LOGO} alt="logo" style={{height:48,marginBottom:7}}/>
-          <div style={{color:C.teal,fontWeight:800,fontSize:15}}>سباق القرّاء الصيفي ١</div>
+          <img src={LOGO} alt="" style={{height:48,marginBottom:7}}/>
+          <div style={{color:C.teal,fontWeight:800,fontSize:15}}>سباق القرّاء الصيفي 1</div>
         </div>
         <div style={{display:'flex',borderRadius:10,overflow:'hidden',border:`1px solid ${C.border}`,marginBottom:16}}>
           {[['login','تسجيل الدخول'],['register','إنشاء حساب']].map(([m,l])=>(
@@ -602,15 +670,16 @@ function AuthScreen({onAdminLogin}){
             {loading?'جارٍ...':(mode==='login'?'دخول':'إنشاء الحساب')}
           </button>
         </div>
-        {mode==='register'&&<div style={{color:C.muted,fontSize:10,textAlign:'center',marginTop:10,lineHeight:1.6}}>سيُرسل طلبك للمشرف وتُفعّل حسابك بعد الموافقة</div>}
+        {mode==='register'&&<div style={{color:C.muted,fontSize:10,textAlign:'center',marginTop:10,lineHeight:1.6}}>يُفعّل حسابك مباشرة بعد الإنشاء</div>}
       </div>
     </div>
   );
 }
+
 function BottomNav({page,setPage}){
-  const items=[['home','🏠','الرئيسية'],['race','🏆','السباق'],['add','📚','أضف قراءة'],['card','📋','بطاقتي']];
+  const items=[['home','🏠','الرئيسية'],['race','🏆','السباق'],['add','📚','أضف قراءة'],['books','📖','الكتب'],['card','📋','بطاقتي']];
   return(
-    <nav style={{position:'fixed',bottom:0,left:0,right:0,background:C.white,borderTop:`1px solid ${C.border}`,display:'flex',flexDirection:'row-reverse',zIndex:100,boxShadow:'0 -4px 14px rgba(0,0,0,.07)'}}>
+    <nav style={{position:'fixed',bottom:0,left:0,right:0,background:C.white,borderTop:`1px solid ${C.border}`,display:'flex',zIndex:100,boxShadow:'0 -4px 14px rgba(0,0,0,.07)'}}>
       {items.map(([p,ic,l])=>(
         <button key={p} onClick={()=>setPage(p)} style={{flex:1,border:'none',background:'transparent',cursor:'pointer',padding:'10px 4px 8px',display:'flex',flexDirection:'column',alignItems:'center',gap:1,position:'relative',outline:'none'}}>
           {p==='add'?(
@@ -626,13 +695,14 @@ function BottomNav({page,setPage}){
     </nav>
   );
 }
+
 function Header({user,onLogout}){
   return(
     <header style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:'10px 16px',display:'flex',justifyContent:'space-between',alignItems:'center',direction:'rtl',position:'sticky',top:0,zIndex:200,boxShadow:'0 2px 8px rgba(0,0,0,.04)'}}>
       <div style={{display:'flex',alignItems:'center',gap:10}}>
         <img src={LOGO} alt="" style={{height:44,width:'auto'}}/>
         <div>
-          <div style={{color:C.teal,fontWeight:800,fontSize:14,lineHeight:1.2}}>سباق القرّاء الصيفي ١</div>
+          <div style={{color:C.teal,fontWeight:800,fontSize:14,lineHeight:1.2}}>سباق القرّاء الصيفي 1</div>
           <div style={{color:C.muted,fontSize:10}}>مجمع الفلاح التعليمي</div>
         </div>
       </div>
@@ -648,6 +718,7 @@ function Header({user,onLogout}){
     </header>
   );
 }
+
 export default function App(){
   const[page,setPage]=useState('home');
   const[user,setUser]=useState(null);
@@ -655,81 +726,63 @@ export default function App(){
   const[loading,setLoading]=useState(true);
   const[students,setStudents]=useState([]);
   const[pendingReadings,setPendingReadings]=useState([]);
-  const[pendingRegs,setPendingRegs]=useState([]);
   const[benefits,setBenefits]=useState([]);
   const[topBenefit,setTopBenefit]=useState(null);
+
   useEffect(()=>{
     const unsub=FB.onAuthChange(async firebaseUser=>{
-      if(firebaseUser){
-        try{
-          const snap=await FB.getUser(firebaseUser.uid);
-          if(snap.exists()){
-            const data={id:firebaseUser.uid,...snap.data()};
-            if(data.rejected){
-              await FB.fbLogout();
-              setUser(null);setAdminMode(false);
-              setLoading(false);
-              alert('❌ تم رفض طلب تسجيلك. تواصل مع المشرف.');
-              return;
-            }
-            if(data.role==='admin'){
-              setAdminMode(true);setUser(null);
-            } else if(data.approved){
-              setUser(data);setAdminMode(false);
-            } else {
-              await FB.fbLogout();
-              setUser(null);setAdminMode(false);
-              setLoading(false);
-              alert('⏳ حسابك في انتظار موافقة المشرف. حاول تسجيل الدخول لاحقاً.');
-              return;
-            }
-          } else {
-            if(firebaseUser.email===FB.ADMIN_EMAIL){
-              await FB.saveUser(firebaseUser.uid,{
-                name:'المشرف',
-                email:firebaseUser.email,
-                group:'المشرف',
-                km:0,
-                role:'admin',
-                approved:true,
-                createdAt:new Date().toISOString(),
-              });
-              setAdminMode(true);setUser(null);
-            } else {
-              await FB.fbLogout();
-              setUser(null);setAdminMode(false);
-              alert('⚠️ لا يوجد ملف لحسابك في قاعدة البيانات. تواصل مع المشرف.');
-            }
-            setLoading(false);
-            return;
-          }
-        }catch(e){
-          console.error('Auth error:',e);
-              alert('خطأ في قراءة البيانات: '+(e.code||e.message));
-          await FB.fbLogout();
+      if(!firebaseUser){
+        setUser(null);setAdminMode(false);setLoading(false);return;
+      }
+      const email=(firebaseUser.email||'').toLowerCase();
+      if(FB.ADMIN_EMAIL && email===FB.ADMIN_EMAIL){
+        setAdminMode(true);setUser(null);setLoading(false);
+        FB.saveUser(firebaseUser.uid,{
+          name:'المشرف',email,group:'المشرف',km:0,
+          role:'admin',approved:true,
+        }).catch(()=>{});
+        return;
+      }
+      try{
+        const snap=await FB.getUser(firebaseUser.uid);
+        if(snap.exists()){
+          setUser({id:firebaseUser.uid,...snap.data()});
+          setAdminMode(false);
+        }else{
+          const basic={
+            name:firebaseUser.displayName||'فارس',
+            email,group:GROUPS[0],km:0,
+            role:'student',approved:true,
+            createdAt:new Date().toISOString(),
+          };
+          await FB.saveUser(firebaseUser.uid,basic);
+          setUser({id:firebaseUser.uid,...basic});
+          setAdminMode(false);
         }
-      } else {
+      }catch(e){
+        console.error('Auth error:',e);
         setUser(null);setAdminMode(false);
+        await FB.fbLogout().catch(()=>{});
       }
       setLoading(false);
     });
     return()=>unsub();
   },[]);
+
   useEffect(()=>{
     const subs=[
       FB.listenStudents(setStudents),
       FB.listenApprovedReadings(setBenefits),
       FB.listenTopBenefit(setTopBenefit),
     ];
-    if(adminMode){
-      subs.push(FB.listenPendingReadings(setPendingReadings));
-      subs.push(FB.listenPendingRegs(setPendingRegs));
-    }
-    return()=>subs.forEach(u=>u());
+    if(adminMode)subs.push(FB.listenPendingReadings(setPendingReadings));
+    return()=>subs.forEach(u=>{try{u();}catch(_){}});
   },[adminMode]);
+
   const handleLogout=async()=>{await FB.fbLogout();setPage('home');};
   const needsAuth=(page==='card'||page==='add')&&!user&&!adminMode;
   const fbConfigMissing=!import.meta.env.VITE_FIREBASE_API_KEY||import.meta.env.VITE_FIREBASE_API_KEY==='your_api_key_here';
+
   if(fbConfigMissing)return(
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#FEF2F2',padding:24}}>
       <div style={{textAlign:'center',maxWidth:480}}>
@@ -738,6 +791,7 @@ export default function App(){
       </div>
     </div>
   );
+
   if(loading)return(
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:C.bg}}>
       <div style={{textAlign:'center'}}>
@@ -747,6 +801,7 @@ export default function App(){
       </div>
     </div>
   );
+
   return(
     <div style={{minHeight:'100vh',background:C.bg,color:C.text,fontFamily:"'Cairo','Tajawal','Segoe UI',Arial,sans-serif"}}>
       <style>{`
@@ -758,6 +813,7 @@ export default function App(){
         input::placeholder,textarea::placeholder{color:${C.muted};}
         button:active{transform:scale(.97);}
         select option{color:${C.text};}
+        @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
       `}</style>
       {adminMode?(
         <>
@@ -771,22 +827,21 @@ export default function App(){
           <AdminPage
             students={students}
             pendingReadings={pendingReadings}
-            pendingRegs={pendingRegs}
             benefits={benefits}
-            topBenefit={topBenefit}
-            setTopBenefit={setTopBenefit}/>
+            topBenefit={topBenefit}/>
         </>
       ):(
         <>
           <Header user={user} onLogout={handleLogout}/>
           <main>
             {needsAuth
-              ?<AuthScreen onAdminLogin={()=>setAdminMode(true)}/>
+              ?<AuthScreen/>
               :(
                 <>
                   {page==='home'&&<HomePage students={students} pendingReadings={pendingReadings} benefits={benefits} topBenefit={topBenefit}/>}
                   {page==='race'&&<RacePage students={students}/>}
                   {page==='add'&&<AddPage user={user}/>}
+                  {page==='books'&&<BooksPage/>}
                   {page==='card'&&<CardPage user={user} students={students} benefits={benefits}/>}
                 </>
               )

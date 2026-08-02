@@ -571,7 +571,7 @@ function AuthScreen({onAdminLogin}){
       window.location.reload();
       return;
     }catch(e){
-      const msgs={'auth/user-not-found':'البريد غير مسجل','auth/wrong-password':'كلمة المرور خاطئة','auth/email-already-in-use':'البريد مستخدم مسبقاً','auth/weak-password':'كلمة المرور ضعيفة (٦ أحرف على الأقل)','auth/invalid-email':'صيغة البريد غير صحيحة'};
+      const msgs={'auth/user-not-found':'البريد غير مسجل','auth/wrong-password':'كلمة المرور خاطئة','auth/invalid-credential':'البريد أو كلمة المرور غير صحيحة','auth/too-many-requests':'محاولات كثيرة، انتظر قليلاً','auth/email-already-in-use':'البريد مستخدم مسبقاً','auth/weak-password':'كلمة المرور ضعيفة (٦ أحرف على الأقل)','auth/invalid-email':'صيغة البريد غير صحيحة','auth/network-request-failed':'مشكلة في الاتصال بالإنترنت'};
       setErr(msgs[e.code]||'حدث خطأ، حاول مجدداً');
     }
 

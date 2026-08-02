@@ -387,7 +387,7 @@ function AddPage({user}){
       });
       setSent(true);setBook('');setPicked('');setPages('');setBenefit('');setErrors({});
       setTimeout(()=>setSent(false),4000);
-    }catch(err){alert('تعذّر إرسال القراءة. تحقق من الاتصال وأعد المحاولة.');}
+    }catch(err){alert('خطأ: '+(err.code||'')+' | '+(err.message||''));}
     setLoading(false);
   };
 

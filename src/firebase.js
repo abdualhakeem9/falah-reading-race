@@ -10,7 +10,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import {
-  getFirestore,
+  initializeFirestore,
   collection, doc,
   getDoc, setDoc, addDoc, updateDoc, deleteDoc,
   onSnapshot, query, where,

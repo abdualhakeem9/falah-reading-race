@@ -705,6 +705,7 @@ export default function App(){
           }
         }catch(e){
           console.error('Auth error:',e);
+              alert('خطأ في قراءة البيانات: '+(e.code||e.message));
           await FB.fbLogout();
         }
       } else {

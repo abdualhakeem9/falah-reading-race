@@ -684,7 +684,24 @@ export default function App(){
               return;
             }
           } else {
+            if(firebaseUser.email===FB.ADMIN_EMAIL){
+              await FB.saveUser(firebaseUser.uid,{
+                name:'المشرف',
+                email:firebaseUser.email,
+                group:'المشرف',
+                km:0,
+                role:'admin',
+                approved:true,
+                createdAt:new Date().toISOString(),
+              });
+              setAdminMode(true);setUser(null);
+            } else {
+              await FB.fbLogout();
+              setUser(null);setAdminMode(false);
+              alert('⚠️ لا يوجد ملف لحسابك في قاعدة البيانات. تواصل مع المشرف.');
+            }
             setLoading(false);
+            return;
           }
         }catch(e){
           console.error('Auth error:',e);

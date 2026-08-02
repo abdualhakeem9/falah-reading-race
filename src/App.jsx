@@ -396,6 +396,13 @@ function AddPage({user}){
   return(
     <div style={{maxWidth:680,margin:'0 auto',padding:'20px 16px 90px',direction:'rtl'}}>
       <h2 style={{color:C.teal,fontWeight:900,fontSize:22,margin:'0 0 14px'}}>📚 سجّل قراءتك</h2>
+            <button onClick={async()=>{
+        try{
+          const t0=Date.now();
+          await FB.saveUser('__ping__',{t:new Date().toISOString()});
+          alert('✅ الاتصال يعمل — '+(Date.now()-t0)+' مللي ثانية');
+        }catch(e){alert('❌ '+(e.code||'')+' | '+(e.message||''));}
+      }} style={{padding:10,marginBottom:12,background:C.grayBg,border:`1px solid ${C.border}`,borderRadius:10,fontSize:12,width:'100%'}}>🔧 اختبار الاتصال بقاعدة البيانات</button>
       <div style={{background:C.tealBg,border:`1px solid ${C.tealL}55`,borderRadius:12,padding:'10px 14px',marginBottom:16,fontSize:12,color:C.tealD,lineHeight:1.8}}>
         1 كم لكل صفحة · الكتب المقترحة {SUGGESTED_MULTIPLIER} كم للصفحة · الحد الأقصى <b>{MAX_PAGES} صفحة</b> لكل إدخال
       </div>

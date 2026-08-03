@@ -89,6 +89,9 @@ export const listenApprovedReadings = (cb) =>
       .filter(r => r.status === 'approved')
       .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)));
   });
-
 export const listenTopBenefit = (cb) =>
   onValue(ref(db, 'settings/topBenefit'), snap => cb(snap.exists() ? snap.val() : null));
+  export const addPendingReg = () => Promise.resolve();
+export const listenPendingRegs = (cb) => { cb([]); return () => {}; };
+export const approveRegistration = () => Promise.resolve();
+export const rejectRegistration = () => Promise.resolve();

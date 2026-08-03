@@ -402,6 +402,12 @@ function AddPage({user}){
           await FB.saveUser('__ping__',{t:new Date().toISOString()});
           alert('✅ الاتصال يعمل — '+(Date.now()-t0)+' مللي ثانية');
         }catch(e){alert('❌ '+(e.code||'')+' | '+(e.message||''));}
+        <div style={{fontSize:11,direction:'ltr',textAlign:'left',wordBreak:'break-all',padding:8,background:'#f0f0f0',border:'1px solid #ccc',borderRadius:6,marginBottom:8,fontFamily:'monospace'}}>
+  PID:[{import.meta.env.VITE_FIREBASE_PROJECT_ID}]<br/>
+  AUTH:[{import.meta.env.VITE_FIREBASE_AUTH_DOMAIN}]<br/>
+  BUCKET:[{import.meta.env.VITE_FIREBASE_STORAGE_BUCKET}]<br/>
+  KEYLEN:[{(import.meta.env.VITE_FIREBASE_API_KEY||'').length}]
+</div>
       }} style={{padding:10,marginBottom:12,background:C.grayBg,border:`1px solid ${C.border}`,borderRadius:10,fontSize:12,width:'100%'}}>🔧 اختبار الاتصال بقاعدة البيانات</button>
       <div style={{background:C.tealBg,border:`1px solid ${C.tealL}55`,borderRadius:12,padding:'10px 14px',marginBottom:16,fontSize:12,color:C.tealD,lineHeight:1.8}}>
         1 كم لكل صفحة · الكتب المقترحة {SUGGESTED_MULTIPLIER} كم للصفحة · الحد الأقصى <b>{MAX_PAGES} صفحة</b> لكل إدخال

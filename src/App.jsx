@@ -1088,9 +1088,41 @@ function AddPage({user}){
     }catch(err){setFail('تعذّر الإرسال — تحقّق من اتصالك وأعد المحاولة');}
     setLoading(false);
   };
-
   const onPick=v=>{setPicked(v);setBook(v||'');};
-
+  const{heat:curHeat,status:hStatus}=getActiveHeat();
+  const cd=useCountdownTo(hStatus==='upcoming'?curHeat.start:null);
+  if(hStatus!=='active')return(
+    <div style={{maxWidth:680,margin:'0 auto',padding:'20px 16px 90px',direction:'rtl'}}>
+      <h2 style={{color:C.teal,fontWeight:900,fontSize:22,margin:'0 0 14px'}}>📚 سجّل قراءتك</h2>
+      <div style={{background:C.white,border:`1.5px solid ${C.border}`,borderRadius:18,padding:'36px 22px',textAlign:'center'}}>
+        <div style={{fontSize:52,marginBottom:12}}>{hStatus==='upcoming'?'⏳':'🏁'}</div>
+        {hStatus==='upcoming'?(
+          <>
+            <div style={{color:C.text,fontSize:17,fontWeight:800,marginBottom:6}}>الميدان لم يُفتح بعد</div>
+            <div style={{color:C.muted,fontSize:12.5,lineHeight:1.9,marginBottom:16}}>
+              تنطلق مرحلة <b style={{color:C.teal}}>{curHeat.emoji} {curHeat.name}</b> ويبدأ تسجيل القراءات حينها
+            </div>
+            <div style={{display:'flex',gap:7,justifyContent:'center',flexWrap:'wrap'}}>
+              {[['يوم',cd.d],['ساعة',cd.h],['دقيقة',cd.m],['ثانية',cd.s]].map(([l,v])=>(
+                <div key={l} style={{background:C.tealBg,border:`1.5px solid ${C.tealL}55`,borderRadius:11,padding:'9px 13px',minWidth:58}}>
+                  <div style={{color:C.teal,fontSize:24,fontWeight:800,fontFamily:'monospace',lineHeight:1}}>{String(v??0).padStart(2,'0')}</div>
+                  <div style={{color:C.muted,fontSize:9.5,marginTop:3}}>{l}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{color:C.muted,fontSize:11,marginTop:16,lineHeight:1.7}}>
+              💡 استغل الوقت في تصفّح <b>الكتب المقترحة</b> واختيار كتابك الأول
+            </div>
+          </>
+        ):(
+          <>
+            <div style={{color:C.text,fontSize:17,fontWeight:800,marginBottom:6}}>انتهى السباق</div>
+            <div style={{color:C.muted,fontSize:12.5,lineHeight:1.9}}>بارك الله في جهودكم يا فرسان 🏅</div>
+          </>
+        )}
+      </div>
+    </div>
+  );
   return(
     <div style={{maxWidth:680,margin:'0 auto',padding:'20px 16px 90px',direction:'rtl'}}>
       <h2 style={{color:C.teal,fontWeight:900,fontSize:22,margin:'0 0 14px'}}>📚 سجّل قراءتك</h2>

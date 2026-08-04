@@ -56,7 +56,6 @@ export const approveReading = async (readingId, studentUid, km) => {
 export const rejectReading = (readingId) =>
   update(ref(db, 'readings/' + readingId), { status: 'rejected' });
 
-// حذف قراءة معتمدة وطرح كيلومتراتها (للمشرف العام فقط)
 export const deleteReading = async (readingId, studentUid, km) => {
   if (studentUid && km) {
     const snap = await get(ref(db, 'users/' + studentUid + '/km'));

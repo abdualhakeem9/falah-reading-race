@@ -1598,6 +1598,7 @@ export default function App(){
   const[topBenefit,setTopBenefit]=useState(null);
   const[votes,setVotes]=useState({});
   const[comments,setComments]=useState({});
+    const[emails,setEmails]=useState({});
   const[reload,setReload]=useState(0);
 
   const students=useMemo(()=>mergeRoster(rawStudents),[rawStudents]);

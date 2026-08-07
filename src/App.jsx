@@ -1428,7 +1428,6 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
               ))}
             </div>
           </>}
-          
           <button onClick={async()=>{
             if(!window.confirm('نقل البُرد الإلكترونية إلى مسار محمي؟'))return;
             setSaving('mig');

@@ -1418,7 +1418,7 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
                 <div key={u.id} style={{background:C.orangeBg,border:`1px solid #FCD34D`,borderRadius:12,padding:13,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
                   <div>
                     <div style={{color:C.text,fontWeight:700,fontSize:13}}>{u.name}</div>
-                    <div style={{color:C.muted,fontSize:10.5,direction:'ltr',textAlign:'right'}}>{u.email}</div>
+<div style={{color:C.muted,fontSize:10.5,direction:'ltr',textAlign:'right'}}>{emails?.[u.id]||u.email||'—'}</div>
                   </div>
                   <div style={{display:'flex',gap:6}}>
                     <button onClick={()=>grant(u.id,'supervisor')} disabled={saving===u.id} style={{padding:'5px 13px',background:C.greenBg,color:C.green,border:`1px solid #86EFAC`,borderRadius:7,cursor:'pointer',fontSize:11,fontWeight:700}}>{saving===u.id?'...':'✓ موافقة'}</button>

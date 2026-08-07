@@ -1428,6 +1428,14 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
               ))}
             </div>
           </>}
+          <button onClick={async()=>{
+            if(!window.confirm('نقل البُرد الإلكترونية إلى مسار محمي؟'))return;
+            setSaving('mig');
+            try{const n=await FB.migrateEmails();alert('نُقل '+n+' بريدًا ✅');}catch(e){alert('تعذّر النقل');}
+            setSaving(null);
+          }} disabled={saving==='mig'} style={{width:'100%',padding:11,marginBottom:16,background:C.purpleBg,color:C.purple,border:`1.5px solid ${C.purple}44`,borderRadius:10,cursor:'pointer',fontSize:12,fontWeight:700}}>
+            {saving==='mig'?'جارٍ النقل...':'🔒 نقل البُرد الإلكترونية لمسار محمي (مرة واحدة)'}
+          </button>
           <div style={{color:C.teal,fontWeight:800,fontSize:13,marginBottom:8}}>👤 المشرفون المعتمدون ({sups.length})</div>
           {sups.length===0?<div style={{color:C.muted,fontSize:12,padding:20,textAlign:'center'}}>لا يوجد مشرفون بعد</div>:
           <div style={{display:'flex',flexDirection:'column',gap:7}}>

@@ -38,7 +38,27 @@ export const getUser = async (uid) => {
   const snap = await get(ref(db, 'users/' + uid));
   return { exists: () => snap.exists(), data: () => snap.val() };
 };
-export const saveUser = (uid, data) => update(ref(db, 'users/' + uid), data);
+export const saveUser = (uid, data) => {
+  const { email, ...rest } = data;
+  const jobs = [update(ref(db, 'users/' + uid), rest)];
+  if (email) jobs.push(set(ref(db, 'emails/' + uid), email));
+  return Promise.all(jobs);
+};
+export const listenEmails = (cb) =>
+  onValue(ref(db, 'emails'), snap => cb(snap.val() || {}));
+export const migrateEmails = async () => {
+  const snap = await get(ref(db, 'users'));
+  const all = snap.val() || {};
+  let n = 0;
+  for (const [uid, u] of Object.entries(all)) {
+    if (u && u.email) {
+      await set(ref(db, 'emails/' + uid), u.email);
+      await remove(ref(db, 'users/' + uid + '/email'));
+      n++;
+    }
+  }
+  return n;
+};
 export const setUserRole = (uid, role) => update(ref(db, 'users/' + uid), { role });
 
 // ── القراءات ────────────────────────────────────────────────

@@ -1287,7 +1287,7 @@ function CardPage({user,students,benefits,comments}){
   );
 }
 // ══════════════════ لوحة الإشراف ══════════════════
-function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,comments}){
+function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,comments,emails}){
   const[tab,setTab]=useState('pending');
   const[saving,setSaving]=useState(null);
   const thS={padding:'9px 12px',color:C.muted,fontSize:11,fontWeight:600,textAlign:'right',background:C.grayBg};

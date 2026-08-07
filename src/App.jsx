@@ -1655,6 +1655,7 @@ export default function App(){
     if(adminMode){
       subs.push(FB.listenPendingReadings(setPendingReadings));
       subs.push(FB.listenAllUsers(setAllUsers));
+            subs.push(FB.listenEmails(setEmails));
     }
     return()=>subs.forEach(u=>{try{u();}catch(_){}});
   },[adminMode]);

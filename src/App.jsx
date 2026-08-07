@@ -1718,6 +1718,7 @@ export default function App(){
       </div>
       <AdminPage students={students} allUsers={allUsers} pendingReadings={pendingReadings}
         benefits={benefits} topBenefit={topBenefit} votes={votes} comments={commentsArr} emails={emails}/>
+            </>
   );
   if(needsProfile&&authUid)return wrap(
     <ProfileSetup uid={authUid} email={authEmail} registered={rawStudents} onDone={()=>setReload(r=>r+1)}/>

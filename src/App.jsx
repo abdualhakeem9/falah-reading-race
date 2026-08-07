@@ -1443,7 +1443,7 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
               <div key={u.id} style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:11,padding:12,display:'flex',justifyContent:'space-between',alignItems:'center',flexWrap:'wrap',gap:8}}>
                 <div>
                   <div style={{color:C.text,fontWeight:700,fontSize:12.5}}>{u.name}</div>
-                  <div style={{color:C.muted,fontSize:10,direction:'ltr',textAlign:'right'}}>{u.email}</div>
+                  <div style={{color:C.muted,fontSize:10,direction:'ltr',textAlign:'right'}}> {emails?.[u.id]||u.email||'—'}</div>
                 </div>
                 <button onClick={()=>grant(u.id,'rejected')} disabled={saving===u.id} style={{padding:'4px 11px',background:C.grayBg,color:C.muted,border:`1px solid ${C.border}`,borderRadius:7,cursor:'pointer',fontSize:10.5}}>سحب الصلاحية</button>
               </div>

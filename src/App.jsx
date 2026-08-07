@@ -1717,10 +1717,8 @@ export default function App(){
         <button onClick={handleLogout} style={{background:'rgba(255,255,255,.2)',color:C.white,border:'none',borderRadius:8,padding:'5px 12px',cursor:'pointer',fontSize:12}}>خروج</button>
       </div>
       <AdminPage students={students} allUsers={allUsers} pendingReadings={pendingReadings}
-        benefits={benefits} topBenefit={topBenefit} votes={votes} comments={commentsArr}/>
-    </>
+        benefits={benefits} topBenefit={topBenefit} votes={votes} comments={commentsArr} emails={emails}/>
   );
-
   if(needsProfile&&authUid)return wrap(
     <ProfileSetup uid={authUid} email={authEmail} registered={rawStudents} onDone={()=>setReload(r=>r+1)}/>
   );

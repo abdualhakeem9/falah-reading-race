@@ -77,8 +77,7 @@ export const rejectReading = (readingId) =>
 
 export const deleteReading = async (readingId, studentUid, km) => {
   if (studentUid && km) {
-    const snap = await get(ref(db, 'users/' + studentUid + '/km'));
-    await set(ref(db, 'users/' + studentUid + '/km'), Math.max(0, (snap.val() || 0) - km));
+    await runTransaction(ref(db, 'users/' + studentUid + '/km'), v => Math.max(0, (v || 0) - km));
   }
   await remove(ref(db, 'readings/' + readingId));
   await remove(ref(db, 'comments/' + readingId));

@@ -1307,17 +1307,17 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
   const pickTop=async(b)=>{setSaving('top');try{await FB.setTopBenefit({...b,pickedAt:new Date().toISOString()});if(b.studentId)await FB.awardKm(b.studentId,BONUS_KM);}catch(e){}setSaving(null);};
   const clearTop=async()=>{setSaving('top');try{await FB.clearTopBenefit();}catch(e){}setSaving(null);};
   const grant=async(uid,role)=>{setSaving(uid);try{await FB.setUserRole(uid,role);}catch(e){}setSaving(null);};
+    const[confirmDel,setConfirmDel]=useState(null);
   const del=(b)=>{
-    alert('بدء الحذف: '+b.book);
-    doDelete(b);
+    if(confirmDel===b.id){setConfirmDel(null);doDelete(b);}
+    else{setConfirmDel(b.id);setTimeout(()=>setConfirmDel(c=>c===b.id?null:c),4000);}
   };
   const doDelete=async(b)=>{
     setSaving(b.id);
     try{
       if(topBenefit?.id===b.id)await FB.clearTopBenefit();
       await FB.deleteReading(b.id,b.studentId,b.km);
-      alert('تم الحذف ✅');
-    }catch(e){alert('فشل: '+(e.code||'')+' | '+(e.message||''));}
+    }catch(e){alert('تعذّر الحذف');}
     setSaving(null);
   };
 
@@ -1406,7 +1406,7 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
                 <CommentList comments={comments?.[b.id]}/>
                 <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
                   {topBenefit?.id!==b.id&&<button onClick={()=>pickTop(b)} disabled={saving==='top'} style={{padding:'4px 12px',background:C.goldBg,color:C.orange,border:`1px solid ${C.gold}55`,borderRadius:6,cursor:'pointer',fontSize:11,fontWeight:700}}>{saving==='top'?'...':`⭐ اختر أجمل فائدة (+${BONUS_KM} كم)`}</button>}
-                  <button onClick={()=>del(b)} disabled={saving===b.id} style={{padding:'4px 12px',background:C.redBg,color:C.red,border:`1px solid #FCA5A5`,borderRadius:6,cursor:'pointer',fontSize:11,fontWeight:700}}>{saving===b.id?'...':`🗑️ حذف (−${b.km} كم)`}</button>
+                  <button onClick={()=>del(b)} disabled={saving===b.id} style={{padding:'4px 12px',background:C.redBg,color:C.red,border:`1px solid #FCA5A5`,borderRadius:6,cursor:'pointer',fontSize:11,fontWeight:700}}>{saving===b.id?'...':confirmDel===b.id?'⚠️ اضغط للتأكيد':`🗑️ حذف (−${b.km} كم)`}</button>
                 </div>
               </div>
             ))}

@@ -1434,7 +1434,6 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
             </div>
           </>}
                     <button onClick={async()=>{
-            if(!window.confirm('إعادة حساب كيلومترات جميع الطلاب من القراءات المعتمدة؟'))return;
             setSaving('rec');
             try{const n=await FB.recomputeKm();alert('صُحّح رصيد '+n+' فارسًا ✅');}catch(e){alert('تعذّر الحساب');}
             setSaving(null);

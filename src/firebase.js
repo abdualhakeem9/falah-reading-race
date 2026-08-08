@@ -67,9 +67,8 @@ export const addReading = (data) =>
 
 export const approveReading = async (readingId, studentUid, km) => {
   await update(ref(db, 'readings/' + readingId), { status: 'approved' });
-  if (studentUid) {
-    const snap = await get(ref(db, 'users/' + studentUid + '/km'));
-    await set(ref(db, 'users/' + studentUid + '/km'), (snap.val() || 0) + km);
+  if (studentUid && km) {
+    await runTransaction(ref(db, 'users/' + studentUid + '/km'), v => (v || 0) + km);
   }
 };
 

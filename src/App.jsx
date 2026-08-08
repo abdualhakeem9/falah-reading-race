@@ -1308,8 +1308,7 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
   const clearTop=async()=>{setSaving('top');try{await FB.clearTopBenefit();}catch(e){}setSaving(null);};
   const grant=async(uid,role)=>{setSaving(uid);try{await FB.setUserRole(uid,role);}catch(e){}setSaving(null);};
   const del=(b)=>{
-    const ok=window.confirm(`حذف قراءة "${b.book}" لـ${b.student}؟ سيُخصم ${b.km} كم من رصيده.`);
-    if(!ok)return;
+    alert('بدء الحذف: '+b.book);
     doDelete(b);
   };
   const doDelete=async(b)=>{
@@ -1317,7 +1316,8 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
     try{
       if(topBenefit?.id===b.id)await FB.clearTopBenefit();
       await FB.deleteReading(b.id,b.studentId,b.km);
-    }catch(e){alert('تعذّر الحذف — أعد المحاولة');}
+      alert('تم الحذف ✅');
+    }catch(e){alert('فشل: '+(e.code||'')+' | '+(e.message||''));}
     setSaving(null);
   };
 

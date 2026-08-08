@@ -84,8 +84,25 @@ export const deleteReading = async (readingId, studentUid, km) => {
 };
 
 export const awardKm = async (uid, km) => {
-  const snap = await get(ref(db, 'users/' + uid + '/km'));
-  await set(ref(db, 'users/' + uid + '/km'), (snap.val() || 0) + km);
+  await runTransaction(ref(db, 'users/' + uid + '/km'), v => (v || 0) + km);
+};
+
+// إعادة حساب كيلومترات الجميع من القراءات المعتمدة
+export const recomputeKm = async () => {
+  const rs = await get(ref(db, 'readings'));
+  const us = await get(ref(db, 'users'));
+  const totals = {};
+  Object.values(rs.val() || {}).forEach(r => {
+    if (r && r.status === 'approved' && r.studentId)
+      totals[r.studentId] = (totals[r.studentId] || 0) + (r.km || 0);
+  });
+  let n = 0;
+  for (const [uid, u] of Object.entries(us.val() || {})) {
+    if (!u || u.role !== 'student') continue;
+    const want = totals[uid] || 0;
+    if ((u.km || 0) !== want) { await set(ref(db, 'users/' + uid + '/km'), want); n++; }
+  }
+  return n;
 };
 
 // ── أجمل فائدة ──────────────────────────────────────────────

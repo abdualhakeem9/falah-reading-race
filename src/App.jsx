@@ -1429,6 +1429,14 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
               ))}
             </div>
           </>}
+                    <button onClick={async()=>{
+            if(!window.confirm('إعادة حساب كيلومترات جميع الطلاب من القراءات المعتمدة؟'))return;
+            setSaving('rec');
+            try{const n=await FB.recomputeKm();alert('صُحّح رصيد '+n+' فارسًا ✅');}catch(e){alert('تعذّر الحساب');}
+            setSaving(null);
+          }} disabled={saving==='rec'} style={{width:'100%',padding:11,marginBottom:10,background:C.tealBg,color:C.tealD,border:`1.5px solid ${C.tealL}66`,borderRadius:10,cursor:'pointer',fontSize:12,fontWeight:700}}>
+            {saving==='rec'?'جارٍ الحساب...':'🔄 إعادة حساب الكيلومترات من القراءات'}
+          </button>
           <button onClick={async()=>{
             if(!window.confirm('نقل البُرد الإلكترونية إلى مسار محمي؟'))return;
             setSaving('mig');

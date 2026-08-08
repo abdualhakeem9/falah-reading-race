@@ -1307,8 +1307,12 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
   const pickTop=async(b)=>{setSaving('top');try{await FB.setTopBenefit({...b,pickedAt:new Date().toISOString()});if(b.studentId)await FB.awardKm(b.studentId,BONUS_KM);}catch(e){}setSaving(null);};
   const clearTop=async()=>{setSaving('top');try{await FB.clearTopBenefit();}catch(e){}setSaving(null);};
   const grant=async(uid,role)=>{setSaving(uid);try{await FB.setUserRole(uid,role);}catch(e){}setSaving(null);};
-  const del=async(b)=>{
-    if(!window.confirm(`حذف قراءة "${b.book}" لـ${b.student}؟\nسيُخصم ${b.km} كم من رصيده ولا يمكن التراجع.`))return;
+  const del=(b)=>{
+    const ok=window.confirm(`حذف قراءة "${b.book}" لـ${b.student}؟ سيُخصم ${b.km} كم من رصيده.`);
+    if(!ok)return;
+    doDelete(b);
+  };
+  const doDelete=async(b)=>{
     setSaving(b.id);
     try{
       if(topBenefit?.id===b.id)await FB.clearTopBenefit();

@@ -715,10 +715,10 @@ function IndividualBoard({students,limit}){
   const[all,setAll]=useState(false);
   const active=students.filter(s=>(s.km||0)>0);
   const list=all||!limit?active:active.slice(0,limit);
-  if(!students.length)return(
+  if(!active.length)return(
     <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:24,textAlign:'center',direction:'rtl'}}>
       <div style={{fontSize:32,marginBottom:6}}>🏅</div>
-      <div style={{color:C.muted,fontSize:13}}>لا يوجد فرسان بعد</div>
+      <div style={{color:C.muted,fontSize:13}}>لم ينطلق أحد بعد</div>
     </div>
   );
   return(
@@ -738,7 +738,7 @@ function IndividualBoard({students,limit}){
       ))}
       {limit&&students.length>limit&&(
         <button onClick={()=>setAll(!all)} style={{width:'100%',padding:'7px',background:'transparent',border:'none',color:C.teal,fontSize:11,fontWeight:700,cursor:'pointer'}}>
-          {all?'▲ عرض أقل':`▼ عرض الكل (${students.length})`}
+{all?'▲ عرض أقل':`▼ عرض الكل (${active.length})`}
         </button>
       )}
     </div>

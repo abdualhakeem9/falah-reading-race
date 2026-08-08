@@ -713,7 +713,8 @@ function KnowledgeRings({students}){
 
 function IndividualBoard({students,limit}){
   const[all,setAll]=useState(false);
-  const list=all||!limit?students:students.slice(0,limit);
+  const active=students.filter(s=>(s.km||0)>0);
+  const list=all||!limit?active:active.slice(0,limit);
   if(!students.length)return(
     <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:24,textAlign:'center',direction:'rtl'}}>
       <div style={{fontSize:32,marginBottom:6}}>🏅</div>

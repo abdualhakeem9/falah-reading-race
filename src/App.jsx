@@ -1441,7 +1441,6 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
             {saving==='rec'?'جارٍ الحساب...':'🔄 إعادة حساب الكيلومترات من القراءات'}
           </button>
           <button onClick={async()=>{
-            if(!window.confirm('نقل البُرد الإلكترونية إلى مسار محمي؟'))return;
             setSaving('mig');
             try{const n=await FB.migrateEmails();alert('نُقل '+n+' بريدًا ✅');}catch(e){alert('تعذّر النقل');}
             setSaving(null);

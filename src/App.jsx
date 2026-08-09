@@ -829,8 +829,22 @@ function BenefitCard({b,comments,canInteract,myVote,onVote,onComment,votes}){
   );
 }
 
+const voteOpen=(b)=>{
+  const t=b?.createdAt; if(!t)return false;
+  const d=new Date(t);
+  const end=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1,6,0,0,0).getTime();
+  return Date.now()<end;
+};
+
 function BenefitsSection({benefits,topBenefit,comments,canInteract,myVote,onVote,onComment,votes}){
-  const daily=useMemo(()=>dailyPick(benefits,4),[benefits]);
+  const[showAll,setShowAll]=useState(false);
+  const sorted=useMemo(()=>[...(benefits||[])].sort((a,b)=>{
+    const oa=voteOpen(a)?1:0,ob=voteOpen(b)?1:0;
+    if(oa!==ob)return ob-oa;
+    return (b.createdAt||0)-(a.createdAt||0);
+  }),[benefits]);
+  const shown=showAll?sorted:sorted.slice(0,8);
+  const firstClosed=shown.findIndex(b=>!voteOpen(b));
   return(
     <div style={{direction:'rtl',marginBottom:20}}>
       {topBenefit&&(<>
@@ -852,20 +866,33 @@ function BenefitsSection({benefits,topBenefit,comments,canInteract,myVote,onVote
         </div>
       </>)}
       <h3 style={{color:C.teal,fontSize:16,fontWeight:800,margin:'0 0 10px'}}>📜 حصاد الفوائد</h3>
-      {daily.length===0?(
+      {sorted.length===0?(
         <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:12,padding:'24px',textAlign:'center',color:C.muted,fontSize:13}}>
           <div style={{fontSize:32,marginBottom:6}}>💬</div>
           ستظهر هنا فوائد الفرسان بعد إقرار القراءات
         </div>
       ):(
         <div style={{display:'flex',flexDirection:'column',gap:10}}>
-          {daily.map(b=>(
-            <BenefitCard key={b.id} b={b} comments={comments?.[b.id]} canInteract={canInteract}
-              myVote={myVote} onVote={onVote} onComment={onComment} votes={votes}/>
+          {shown.map((b,i)=>(
+            <div key={b.id}>
+              {i===firstClosed&&firstClosed>0&&(
+                <div style={{color:C.muted,fontSize:11,fontWeight:700,margin:'6px 0 10px',display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{flex:1,height:1,background:C.border}}/>
+                  🔒 انتهت مهلة التصويت
+                  <span style={{flex:1,height:1,background:C.border}}/>
+                </div>
+              )}
+              <BenefitCard b={b} comments={comments?.[b.id]} canInteract={canInteract&&voteOpen(b)}
+                myVote={myVote} onVote={onVote} onComment={onComment} votes={votes}/>
+            </div>
           ))}
         </div>
       )}
-      {benefits.length>4&&<div style={{textAlign:'center',color:C.muted,fontSize:10,marginTop:8}}>تتجدّد المعروضة يوميًا من {benefits.length} فائدة</div>}
+      {sorted.length>8&&(
+        <button onClick={()=>setShowAll(!showAll)} style={{width:'100%',marginTop:10,padding:'8px',background:'transparent',border:'none',color:C.teal,fontSize:11.5,fontWeight:700,cursor:'pointer'}}>
+          {showAll?'▲ عرض أقل':`▼ عرض الكل (${sorted.length})`}
+        </button>
+      )}
     </div>
   );
 }

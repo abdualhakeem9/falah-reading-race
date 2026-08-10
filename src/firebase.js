@@ -8,7 +8,7 @@ import {
 } from 'firebase/auth';
 import {
   getDatabase, ref, get, set, update, remove, push,
-onValue, serverTimestamp, runTransaction,
+  onValue, serverTimestamp, runTransaction,
 } from 'firebase/database';
 
 const firebaseConfig = {
@@ -25,6 +25,9 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getDatabase(app);
 export const ADMIN_EMAIL = (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
+
+const toArray = (val) =>
+  val ? Object.entries(val).map(([id, v]) => ({ id, ...v })) : [];
 
 // ── المصادقة ─────────────────────────────────────────────────
 export const fbLogin      = (email, pw) => signInWithEmailAndPassword(auth, email, pw);
@@ -66,7 +69,7 @@ export const addReading = (data) =>
   push(ref(db, 'readings'), { ...data, status: 'pending', createdAt: serverTimestamp() });
 
 export const approveReading = async (readingId, studentUid, km) => {
-  await update(ref(db, 'readings/' + readingId), { status: 'approved' });
+  await update(ref(db, 'readings/' + readingId), { status: 'approved', approvedAt: Date.now() });
   if (studentUid && km) {
     await runTransaction(ref(db, 'users/' + studentUid + '/km'), v => (v || 0) + km);
   }
@@ -83,18 +86,34 @@ export const deleteReading = async (readingId, studentUid, km) => {
   await remove(ref(db, 'comments/' + readingId));
 };
 
-export const awardKm = async (uid, km) => {
+// ── المكافآت ────────────────────────────────────────────────
+export const awardKm = async (uid, km, meta = {}) => {
   await runTransaction(ref(db, 'users/' + uid + '/km'), v => (v || 0) + km);
+  await push(ref(db, 'awards'), {
+    studentId: uid,
+    km,
+    reason:    meta.reason || 'topBenefit',
+    readingId: meta.readingId || null,
+    createdAt: meta.createdAt || Date.now(),
+  });
 };
 
-// إعادة حساب كيلومترات الجميع من القراءات المعتمدة
+export const listenAwards = (cb) =>
+  onValue(ref(db, 'awards'), snap => cb(toArray(snap.val())));
+
+// إعادة حساب كيلومترات الجميع من القراءات المعتمدة + المكافآت
 export const recomputeKm = async () => {
   const rs = await get(ref(db, 'readings'));
+  const aw = await get(ref(db, 'awards'));
   const us = await get(ref(db, 'users'));
   const totals = {};
   Object.values(rs.val() || {}).forEach(r => {
     if (r && r.status === 'approved' && r.studentId)
       totals[r.studentId] = (totals[r.studentId] || 0) + (r.km || 0);
+  });
+  Object.values(aw.val() || {}).forEach(a => {
+    if (a && a.studentId)
+      totals[a.studentId] = (totals[a.studentId] || 0) + (a.km || 0);
   });
   let n = 0;
   for (const [uid, u] of Object.entries(us.val() || {})) {
@@ -124,9 +143,6 @@ export const deleteComment = (readingId, cid) =>
 // ══════════════════════════════════════════════════════════════
 //  مستمعون حي
 // ══════════════════════════════════════════════════════════════
-const toArray = (val) =>
-  val ? Object.entries(val).map(([id, v]) => ({ id, ...v })) : [];
-
 export const listenStudents = (cb) =>
   onValue(ref(db, 'users'), snap => {
     cb(toArray(snap.val())

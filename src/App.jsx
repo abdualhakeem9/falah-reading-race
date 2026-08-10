@@ -792,12 +792,26 @@ function IndividualBoard({students,limit,heat}){
   );
 }
 
-function GroupsBoard({students}){
-  const grouped=GROUPS.map((name,i)=>({id:i,name,km:students.filter(s=>s.group===name).reduce((a,s)=>a+(s.km||0),0),n:students.filter(s=>s.group===name).length})).sort((a,b)=>b.km-a.km);
+function GroupsBoard({students,heat}){
+  const[mode,setMode]=useState('heat');
+  const key=mode==='heat'?'heatKm':'km';
+  const target=mode==='heat'?(heat?.group||1000):HEATS.reduce((a,h)=>a+h.group,0);
+  const grouped=GROUPS.map((name,i)=>{
+    const mem=students.filter(s=>s.group===name);
+    return{id:i,name,km:mem.reduce((a,s)=>a+(s[key]||0),0),tot:mem.reduce((a,s)=>a+(s.km||0),0),n:mem.length};
+  }).sort((a,b)=>b.km-a.km);
   const max=Math.max(grouped[0]?.km||1,1);
+  const tabBtn=(m,l)=>(
+    <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:'6px 4px',background:mode===m?C.teal:C.white,color:mode===m?C.white:C.gray,border:`1.5px solid ${mode===m?C.teal:C.border}`,borderRadius:8,cursor:'pointer',fontSize:10.5,fontWeight:700}}>{l}</button>
+  );
   return(
     <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:18,direction:'rtl'}}>
-      <h3 style={{margin:'0 0 14px',color:C.teal,fontSize:15,fontWeight:800}}>🕌 سباق الحلقات</h3>
+      <h3 style={{margin:'0 0 10px',color:C.teal,fontSize:15,fontWeight:800}}>🕌 سباق الحلقات</h3>
+      <div style={{display:'flex',gap:6,marginBottom:10}}>
+        {tabBtn('heat',`${heat?.emoji||'⚡'} المرحلة`)}
+        {tabBtn('all','🏁 الإجمالي')}
+      </div>
+      <div style={{color:C.muted,fontSize:10,marginBottom:10,textAlign:'center'}}>🎯 هدف الحلقة: {target} كم</div>
       {grouped.map((g,i)=>(
         <div key={g.id} style={{marginBottom:9,padding:11,background:i===0&&g.km>0?C.tealBg:C.grayBg,borderRadius:11,border:`1px solid ${i===0&&g.km>0?C.tealL+'55':C.border}`}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:g.km>0?7:0}}>
@@ -805,12 +819,15 @@ function GroupsBoard({students}){
               <span style={{fontSize:15}}>{g.km>0?['🥇','🥈','🥉','4','5','6'][i]:i+1}</span>
               <div>
                 <div style={{color:C.text,fontWeight:700,fontSize:12}}>{g.name}</div>
-                {g.n>0&&<div style={{color:C.muted,fontSize:9}}>{g.n} فارس</div>}
+                <div style={{color:C.muted,fontSize:9}}>{g.n} فارس{g.km>=target?' · 🎯 بلغت الهدف':''}</div>
               </div>
             </div>
-            <div style={{color:i===0&&g.km>0?C.teal:C.muted,fontWeight:800,fontSize:g.km>0?16:12}}>{g.km>0?`${g.km} كم`:'—'}</div>
+            <div style={{textAlign:'left'}}>
+              <div style={{color:i===0&&g.km>0?C.teal:C.muted,fontWeight:800,fontSize:g.km>0?16:12}}>{g.km>0?`${g.km} كم`:'—'}</div>
+              {mode==='heat'&&g.tot>0&&<div style={{color:C.muted,fontSize:9}}>الإجمالي {g.tot}</div>}
+            </div>
           </div>
-          {g.km>0&&<div style={{background:'rgba(0,0,0,.07)',borderRadius:4,height:5,overflow:'hidden'}}><div style={{height:'100%',width:`${(g.km/max)*100}%`,background:`linear-gradient(to left,${C.teal},${C.tealL})`,borderRadius:4}}/></div>}
+          {g.km>0&&<div style={{background:'rgba(0,0,0,.07)',borderRadius:4,height:5,overflow:'hidden'}}><div style={{height:'100%',width:`${Math.min(100,(g.km/max)*100)}%`,background:`linear-gradient(to left,${C.teal},${C.tealL})`,borderRadius:4}}/></div>}
         </div>
       ))}
     </div>

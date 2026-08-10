@@ -561,8 +561,8 @@ function generateNews(students,benefits){
   if(status==='active'){
     const left=Math.max(1,Math.ceil((heat.end-Date.now())/864e5));
     news.push({i:heat.emoji,t:`مرحلة ${heat.name} جارية — باقٍ ${arDays(left)}`,k:'hot'});
-    const pct=Math.min(100,Math.round(totalKm/heat.target*100));
-    news.push({i:'🎯',t:pct>=100?`تجاوزنا هدف المرحلة (${heat.target} كم) 🎉`:`بلغنا ${pct}% من هدف المرحلة (${heat.target} كم)`});
+    const pct=Math.min(100,Math.round(totalKm/(heat.group*GROUPS.length)*100));
+    news.push({i:'🎯',t:`الهدف الفردي ${heat.indiv} كم · هدف الحلقة ${heat.group} كم`});
   }else if(status==='upcoming'){
     const d=Math.max(1,Math.ceil((heat.start-Date.now())/864e5));
     news.push({i:'⏳',t:`تنطلق مرحلة ${heat.name} بعد ${arDays(d)} — استعدّوا`,k:'hot'});

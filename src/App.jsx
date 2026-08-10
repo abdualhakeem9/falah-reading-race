@@ -1647,7 +1647,7 @@ export default function App(){
 
   const students=useMemo(()=>mergeRoster(rawStudents),[rawStudents]);
   const isSup=user?.role==='supervisor';
-  const today=votes[dayKey()]||{};
+  const today=votes['2026-08-09']||{};
   const myVote=authUid?today[authUid]:null;
 
   const commentsArr=useMemo(()=>{

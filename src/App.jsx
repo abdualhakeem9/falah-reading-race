@@ -21,9 +21,9 @@ const C = {
 const MC=['#C9A227','#9CA3AF','#CD7F32'];
 
 const HEATS=[
-  {id:1,name:'التروّي',emoji:'🌿',start:new Date('2026-08-05T00:00:00'),end:new Date('2026-08-09T23:59:59'),target:500},
-  {id:2,name:'الإسراع',emoji:'⚡',start:new Date('2026-08-10T00:00:00'),end:new Date('2026-08-15T23:59:59'),target:1000},
-  {id:3,name:'الاندفاع',emoji:'🔥',start:new Date('2026-08-16T00:00:00'),end:new Date('2026-08-22T23:59:59'),target:1500},
+  {id:1,name:'التروّي',emoji:'🌿',start:new Date('2026-08-05T00:00:00'),end:new Date('2026-08-09T23:59:59'),indiv:500,group:1000},
+  {id:2,name:'الإسراع',emoji:'⚡',start:new Date('2026-08-10T00:00:00'),end:new Date('2026-08-15T23:59:59'),indiv:750,group:1500},
+  {id:3,name:'الاندفاع',emoji:'🔥',start:new Date('2026-08-16T00:00:00'),end:new Date('2026-08-22T23:59:59'),indiv:1000,group:2000},
 ];
 
 const GROUPS=['حلقة أولى متوسط','حلقة القويز','حلقة الحمراء','حلقة أولى ثانوي','حلقة ثاني ثانوي','حلقة ثالث ثانوي'];
@@ -492,7 +492,41 @@ function getActiveHeat(){
 function getHeatStatus(h){const n=Date.now();if(n<h.start)return'upcoming';if(n>h.end)return'done';return'active';}
 const dayKey=()=>{const d=new Date(Date.now()+3*36e5);return d.toISOString().slice(0,10);};
 const arDays=n=>n===1?'يوم':n===2?'يومان':n<=10?`${n} أيام`:`${n} يومًا`;
+// نطاق المرحلة بالمللي ثانية
+const heatRange=(h)=>[h.start.getTime(),h.end.getTime()];
 
+// رصيد الطالب داخل مرحلة معيّنة (قراءات + مكافآت، بتاريخ الإرسال)
+function heatKmFor(uid,heat,readings,awards){
+  if(!uid||!heat)return 0;
+  const[s,e]=heatRange(heat);
+  let t=0;
+  (readings||[]).forEach(r=>{
+    if(r.studentId===uid&&r.status!=='rejected'){
+      const c=r.createdAt||0;
+      if(c>=s&&c<=e)t+=(r.km||0);
+    }
+  });
+  (awards||[]).forEach(a=>{
+    if(a.studentId===uid){
+      const c=a.createdAt||0;
+      if(c>=s&&c<=e)t+=(a.km||0);
+    }
+  });
+  return t;
+}
+
+// إضافة رصيد المرحلة لكل طالب في القائمة
+function withHeatKm(students,heat,readings,awards){
+  return students.map(s=>({...s,heatKm:s.ghost?0:heatKmFor(s.id,heat,readings,awards)}));
+}
+
+// نافذة التصويت: من الإرسال حتى ٦ص من اليوم التالي (توقيت الرياض)
+const voteOpen=(b)=>{
+  const t=b?.createdAt; if(!t)return false;
+  const d=new Date(t+3*36e5);
+  const end=Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()+1,6,0,0)-3*36e5;
+  return Date.now()<end;
+};
 // دمج قائمة الأسماء المعتمدة مع الحسابات المسجّلة
 function mergeRoster(registered){
   if(!SHOW_ALL_ROSTER)return registered;
@@ -711,36 +745,49 @@ function KnowledgeRings({students}){
   );
 }
 
-function IndividualBoard({students,limit}){
+function IndividualBoard({students,limit,heat}){
   const[all,setAll]=useState(false);
-  const active=students.filter(s=>(s.km||0)>0);
+  const[mode,setMode]=useState('heat');
+  const key=mode==='heat'?'heatKm':'km';
+  const active=students.filter(s=>(s[key]||0)>0).sort((a,b)=>(b[key]||0)-(a[key]||0));
   const list=all||!limit?active:active.slice(0,limit);
-  if(!active.length)return(
-    <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:24,textAlign:'center',direction:'rtl'}}>
-      <div style={{fontSize:32,marginBottom:6}}>🏅</div>
-      <div style={{color:C.muted,fontSize:13}}>لم ينطلق أحد بعد</div>
-    </div>
+  const tabBtn=(m,l)=>(
+    <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:'6px 4px',background:mode===m?C.teal:C.white,color:mode===m?C.white:C.gray,border:`1.5px solid ${mode===m?C.teal:C.border}`,borderRadius:8,cursor:'pointer',fontSize:10.5,fontWeight:700}}>{l}</button>
   );
   return(
     <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:18,direction:'rtl'}}>
-      <h3 style={{margin:'0 0 14px',color:C.teal,fontSize:15,fontWeight:800}}>🥇 ترتيب الفرسان</h3>
-      {list.map((st,i)=>(
-        <div key={st.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 10px',marginBottom:6,background:i===0&&st.km>0?C.tealBg:C.grayBg,borderRadius:9,border:`1px solid ${i===0&&st.km>0?C.tealL+'44':C.border}`,opacity:st.ghost?.6:1}}>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <span style={{color:i<3&&st.km>0?MC[i]:C.muted,fontWeight:800,fontSize:13,minWidth:18}}>{i<3&&st.km>0?['🥇','🥈','🥉'][i]:i+1}</span>
-            <div>
-              <div style={{color:C.text,fontSize:12,fontWeight:600}}>{st.name?.split(' ').slice(0,2).join(' ')}</div>
-              <div style={{color:C.muted,fontSize:9}}>{st.group}</div>
+      <h3 style={{margin:'0 0 10px',color:C.teal,fontSize:15,fontWeight:800}}>🥇 ترتيب الفرسان</h3>
+      <div style={{display:'flex',gap:6,marginBottom:12}}>
+        {tabBtn('heat',`${heat?.emoji||'⚡'} المرحلة`)}
+        {tabBtn('all','🏁 الإجمالي')}
+      </div>
+      {!active.length?(
+        <div style={{textAlign:'center',padding:'24px',color:C.muted,fontSize:13}}>
+          <div style={{fontSize:32,marginBottom:6}}>🏅</div>
+          {mode==='heat'?'لم ينطلق أحد في هذه المرحلة بعد':'لم ينطلق أحد بعد'}
+        </div>
+      ):(<>
+        {list.map((st,i)=>(
+          <div key={st.id} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'8px 10px',marginBottom:6,background:i===0?C.tealBg:C.grayBg,borderRadius:9,border:`1px solid ${i===0?C.tealL+'44':C.border}`}}>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <span style={{color:i<3?MC[i]:C.muted,fontWeight:800,fontSize:13,minWidth:18}}>{i<3?['🥇','🥈','🥉'][i]:i+1}</span>
+              <div>
+                <div style={{color:C.text,fontSize:12,fontWeight:600}}>{st.name?.split(' ').slice(0,2).join(' ')}</div>
+                <div style={{color:C.muted,fontSize:9}}>{st.group}</div>
+              </div>
+            </div>
+            <div style={{textAlign:'left'}}>
+              <div style={{color:C.teal,fontWeight:800,fontSize:13}}>{st[key]||0} كم</div>
+              {mode==='heat'&&<div style={{color:C.muted,fontSize:9}}>الإجمالي {st.km||0}</div>}
             </div>
           </div>
-          <span style={{color:st.km>0?C.teal:C.muted,fontWeight:800,fontSize:13}}>{st.km||0} كم</span>
-        </div>
-      ))}
-      {limit&&students.length>limit&&(
-        <button onClick={()=>setAll(!all)} style={{width:'100%',padding:'7px',background:'transparent',border:'none',color:C.teal,fontSize:11,fontWeight:700,cursor:'pointer'}}>
-{all?'▲ عرض أقل':`▼ عرض الكل (${active.length})`}
-        </button>
-      )}
+        ))}
+        {limit&&active.length>limit&&(
+          <button onClick={()=>setAll(!all)} style={{width:'100%',padding:'7px',background:'transparent',border:'none',color:C.teal,fontSize:11,fontWeight:700,cursor:'pointer'}}>
+            {all?'▲ عرض أقل':`▼ عرض الكل (${active.length})`}
+          </button>
+        )}
+      </>)}
     </div>
   );
 }
@@ -829,12 +876,6 @@ function BenefitCard({b,comments,canInteract,myVote,onVote,onComment,votes}){
   );
 }
 
-const voteOpen=(b)=>{
-  const t=b?.createdAt; if(!t)return false;
-  const d=new Date(t);
-  const end=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1,6,0,0,0).getTime();
-  return Date.now()<end;
-};
 
 function BenefitsSection({benefits,topBenefit,comments,canInteract,myVote,onVote,onComment,votes}){
   const[showAll,setShowAll]=useState(false);

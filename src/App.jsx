@@ -1320,7 +1320,7 @@ function AddPage({user}){
 function CardPage({user,students,benefits,comments}){
   const st=students.find(s=>s.id===user.id)||students.find(s=>s.name===user.name);
   const rank=st?students.findIndex(s=>s.id===st.id)+1:null;
-  const{heat}=getActiveHeat();const maxKm=heat?.target||500;
+    const{heat}=getActiveHeat();const maxKm=heat?.indiv||500;
   const km=st?.km||0;const pct=Math.min((km/maxKm)*100,100);
   const myBenefits=benefits.filter(b=>b.studentId===user.id);
   return(
@@ -1701,10 +1701,13 @@ export default function App(){
   const[votes,setVotes]=useState({});
   const[comments,setComments]=useState({});
     const[emails,setEmails]=useState({});
+      const[awards,setAwards]=useState([]);
   const[reload,setReload]=useState(0);
 
   const students=useMemo(()=>mergeRoster(rawStudents),[rawStudents]);
   const isSup=user?.role==='supervisor';
+    const{heat:curHeatG}=getActiveHeat();
+  const studentsH=useMemo(()=>withHeatKm(students,curHeatG,benefits,awards),[students,curHeatG,benefits,awards]);
   const today=votes['2026-08-09']||{};
   const myVote=authUid?today[authUid]:null;
 
@@ -1753,6 +1756,7 @@ export default function App(){
       FB.listenTopBenefit(setTopBenefit),
       FB.listenVotes(setVotes),
       FB.listenComments(setComments),
+            FB.listenAwards(setAwards),
     ];
     if(adminMode){
       subs.push(FB.listenPendingReadings(setPendingReadings));
@@ -1843,12 +1847,12 @@ export default function App(){
       <main>
         {needsAuth?<AuthScreen/>:(
           <>
-            {page==='home'&&<HomePage students={students} benefits={benefits} topBenefit={topBenefit}
+                    {page==='home'&&<HomePage students={studentsH} heat={curHeatG} benefits={benefits} topBenefit={topBenefit}
               comments={commentsArr} canInteract={isSup} myVote={myVote} onVote={onVote} onComment={onComment} todayVotes={today}/>}
-            {page==='race'&&<RacePage students={students}/>}
+            {page==='race'&&<RacePage students={studentsH} heat={curHeatG}/>}
             {page==='add'&&user&&<AddPage user={user}/>}
             {page==='books'&&<BooksPage/>}
-            {page==='card'&&user&&<CardPage user={user} students={students} benefits={benefits} comments={commentsArr}/>}
+            {page==='card'&&user&&<CardPage user={user} students={studentsH} benefits={benefits} comments={commentsArr}/>}
           </>
         )}
       </main>

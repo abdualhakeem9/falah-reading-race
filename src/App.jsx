@@ -1324,10 +1324,16 @@ function AdminPage({students,allUsers,pendingReadings,benefits,topBenefit,votes,
   const reqs=allUsers.filter(u=>u.role==='pending_supervisor');
   const sups=allUsers.filter(u=>u.role==='supervisor');
   const today=votes[dayKey()]||{};
+  const prevKey=(()=>{const d=new Date(Date.now()+3*36e5);d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);})();
+  const nowH=new Date(Date.now()+3*36e5).getUTCHours();
+  const prevOpen=nowH<6;
+  const prev=prevOpen?(votes[prevKey]||{}):{};
   const tally=useMemo(()=>{
-    const m={};Object.values(today).forEach(rid=>{m[rid]=(m[rid]||0)+1;});
+    const m={};
+    Object.values(today).forEach(rid=>{m[rid]=(m[rid]||0)+1;});
+    Object.values(prev).forEach(rid=>{m[rid]=(m[rid]||0)+1;});
     return benefits.map(b=>({...b,v:m[b.id]||0})).filter(b=>b.v>0).sort((a,b)=>b.v-a.v);
-  },[today,benefits]);
+  },[today,prev,benefits]);
 
   const approve=async(r)=>{setSaving(r.id);try{await FB.approveReading(r.id,r.studentId,r.km);}catch(e){}setSaving(null);};
   const reject=async(id)=>{setSaving(id);try{await FB.rejectReading(id);}catch(e){}setSaving(null);};

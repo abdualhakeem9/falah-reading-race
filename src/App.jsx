@@ -490,7 +490,7 @@ function getActiveHeat(){
   return{heat:HEATS[2],status:'done'};
 }
 function getHeatStatus(h){const n=Date.now();if(n<h.start)return'upcoming';if(n>h.end)return'done';return'active';}
-const dayKey=()=>new Date().toISOString().slice(0,10);
+const dayKey=()=>{const d=new Date(Date.now()+3*36e5);return d.toISOString().slice(0,10);};
 const arDays=n=>n===1?'يوم':n===2?'يومان':n<=10?`${n} أيام`:`${n} يومًا`;
 
 // دمج قائمة الأسماء المعتمدة مع الحسابات المسجّلة

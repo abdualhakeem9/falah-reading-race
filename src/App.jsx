@@ -719,7 +719,7 @@ function CircleRing({rank,firstName,km,pct,color,ghost}){
   );
 }
 function KnowledgeRings({students}){
-  const{heat}=getActiveHeat();const maxKm=heat?.target||500;
+  const{heat}=getActiveHeat();const maxKm=heat?.indiv||500;
   const rc=(i,km)=>km>0?(i===0?C.gold:i<3?MC[i]:C.teal):C.grayL;
   if(!students.length)return(
     <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:'32px 24px',textAlign:'center',direction:'rtl'}}>

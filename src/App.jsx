@@ -24,6 +24,7 @@ const HEATS=[
   {id:1,name:'التروّي',emoji:'🌿',start:new Date('2026-08-05T00:00:00'),end:new Date('2026-08-09T23:59:59'),indiv:500,group:1000},
   {id:2,name:'الإسراع',emoji:'⚡',start:new Date('2026-08-10T00:00:00'),end:new Date('2026-08-15T23:59:59'),indiv:750,group:1500},
   {id:3,name:'الاندفاع',emoji:'🔥',start:new Date('2026-08-16T00:00:00'),end:new Date('2026-08-22T23:59:59'),indiv:1000,group:2000},
+    {id:4,name:'التدارك',emoji:'📝',start:new Date('2026-08-23T00:00:00'),end:new Date('2026-08-27T12:00:00'),indiv:0,group:0},
 ];
 
 const GROUPS=['حلقة أولى متوسط','حلقة القويز','حلقة الحمراء','حلقة أولى ثانوي','حلقة ثاني ثانوي','حلقة ثالث ثانوي'];

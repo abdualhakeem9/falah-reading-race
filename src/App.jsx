@@ -807,10 +807,13 @@ function IndividualBoard({students,limit,heat}){
 
 function GroupsBoard({students,heat}){
   const[mode,setMode]=useState('heat');
+  const[hid,setHid]=useState(heat?.id||1);
+  const shown=HEATS.find(h=>h.id===hid)||heat;
+  const withKm=mode==='heat'?students.map(s=>({...s,heatKm:s.ghost?0:heatKmFor(s.id,shown,window.__benefits||[],window.__awards||[])})):students;
   const key=mode==='heat'?'heatKm':'km';
-  const target=mode==='heat'?(heat?.group||1000):HEATS.reduce((a,h)=>a+h.group,0);
+  const target=mode==='heat'?(shown?.group||0):HEATS.reduce((a,h)=>a+h.group,0);
   const grouped=GROUPS.map((name,i)=>{
-    const mem=students.filter(s=>s.group===name);
+    const mem=withKm.filter(s=>s.group===name);
     return{id:i,name,km:mem.reduce((a,s)=>a+(s[key]||0),0),tot:mem.reduce((a,s)=>a+(s.km||0),0),n:mem.length};
   }).sort((a,b)=>b.km-a.km);
   const max=Math.max(grouped[0]?.km||1,1);
@@ -820,11 +823,18 @@ function GroupsBoard({students,heat}){
   return(
     <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:18,direction:'rtl'}}>
       <h3 style={{margin:'0 0 10px',color:C.teal,fontSize:15,fontWeight:800}}>🕌 سباق الحلقات</h3>
-      <div style={{display:'flex',gap:6,marginBottom:10}}>
-        {tabBtn('heat',`${heat?.emoji||'⚡'} المرحلة`)}
+      <div style={{display:'flex',gap:6,marginBottom:8}}>
+        {tabBtn('heat','⚡ المرحلة')}
         {tabBtn('all','🏁 الإجمالي')}
       </div>
-      <div style={{color:C.muted,fontSize:10,marginBottom:10,textAlign:'center'}}>🎯 هدف الحلقة: {target} كم</div>
+      {mode==='heat'&&(
+        <div style={{display:'flex',gap:4,marginBottom:10,flexWrap:'wrap'}}>
+          {HEATS.map(h=>(
+            <button key={h.id} onClick={()=>setHid(h.id)} style={{flex:1,padding:'5px 2px',background:hid===h.id?C.tealBg:C.white,color:hid===h.id?C.tealD:C.muted,border:`1px solid ${hid===h.id?C.tealL:C.border}`,borderRadius:7,cursor:'pointer',fontSize:9.5,fontWeight:700}}>{h.emoji} {h.name}</button>
+          ))}
+        </div>
+      )}
+      {target>0&&<div style={{color:C.muted,fontSize:10,marginBottom:10,textAlign:'center'}}>🎯 هدف الحلقة: {target} كم</div>}
       {grouped.map((g,i)=>(
         <div key={g.id} style={{marginBottom:9,padding:11,background:i===0&&g.km>0?C.tealBg:C.grayBg,borderRadius:11,border:`1px solid ${i===0&&g.km>0?C.tealL+'55':C.border}`}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:g.km>0?7:0}}>
@@ -832,7 +842,7 @@ function GroupsBoard({students,heat}){
               <span style={{fontSize:15}}>{g.km>0?['🥇','🥈','🥉','4','5','6'][i]:i+1}</span>
               <div>
                 <div style={{color:C.text,fontWeight:700,fontSize:12}}>{g.name}</div>
-                <div style={{color:C.muted,fontSize:9}}>{g.n} فارس{g.km>=target?' · 🎯 بلغت الهدف':''}</div>
+                <div style={{color:C.muted,fontSize:9}}>{g.n} فارس{target>0&&g.km>=target?' · 🎯 بلغت الهدف':''}</div>
               </div>
             </div>
             <div style={{textAlign:'left'}}>

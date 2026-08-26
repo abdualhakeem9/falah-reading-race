@@ -751,8 +751,11 @@ function KnowledgeRings({students}){
 function IndividualBoard({students,limit,heat}){
   const[all,setAll]=useState(false);
   const[mode,setMode]=useState('heat');
+  const[hid,setHid]=useState(heat?.id||1);
+  const shown=HEATS.find(h=>h.id===hid)||heat;
   const key=mode==='heat'?'heatKm':'km';
-  const active=students.filter(s=>(s[key]||0)>0).sort((a,b)=>(b[key]||0)-(a[key]||0));
+  const list0=mode==='heat'?students.map(s=>({...s,heatKm:s.ghost?0:heatKmFor(s.id,shown,window.__benefits||[],window.__awards||[])})):students;
+  const active=list0.filter(s=>(s[key]||0)>0).sort((a,b)=>(b[key]||0)-(a[key]||0));
   const list=all||!limit?active:active.slice(0,limit);
   const tabBtn=(m,l)=>(
     <button key={m} onClick={()=>setMode(m)} style={{flex:1,padding:'6px 4px',background:mode===m?C.teal:C.white,color:mode===m?C.white:C.gray,border:`1.5px solid ${mode===m?C.teal:C.border}`,borderRadius:8,cursor:'pointer',fontSize:10.5,fontWeight:700}}>{l}</button>
@@ -760,14 +763,21 @@ function IndividualBoard({students,limit,heat}){
   return(
     <div style={{background:C.white,border:`1px solid ${C.border}`,borderRadius:16,padding:18,direction:'rtl'}}>
       <h3 style={{margin:'0 0 10px',color:C.teal,fontSize:15,fontWeight:800}}>🥇 ترتيب الفرسان</h3>
-      <div style={{display:'flex',gap:6,marginBottom:12}}>
-        {tabBtn('heat',`${heat?.emoji||'⚡'} المرحلة`)}
+      <div style={{display:'flex',gap:6,marginBottom:8}}>
+        {tabBtn('heat','⚡ المرحلة')}
         {tabBtn('all','🏁 الإجمالي')}
       </div>
+      {mode==='heat'&&(
+        <div style={{display:'flex',gap:4,marginBottom:10,flexWrap:'wrap'}}>
+          {HEATS.map(h=>(
+            <button key={h.id} onClick={()=>setHid(h.id)} style={{flex:1,padding:'5px 2px',background:hid===h.id?C.tealBg:C.white,color:hid===h.id?C.tealD:C.muted,border:`1px solid ${hid===h.id?C.tealL:C.border}`,borderRadius:7,cursor:'pointer',fontSize:9.5,fontWeight:700}}>{h.emoji} {h.name}</button>
+          ))}
+        </div>
+      )}
       {!active.length?(
         <div style={{textAlign:'center',padding:'24px',color:C.muted,fontSize:13}}>
           <div style={{fontSize:32,marginBottom:6}}>🏅</div>
-          {mode==='heat'?'لم ينطلق أحد في هذه المرحلة بعد':'لم ينطلق أحد بعد'}
+          لم ينطلق أحد في هذه المرحلة
         </div>
       ):(<>
         {list.map((st,i)=>(
@@ -1711,7 +1721,8 @@ export default function App(){
   const isSup=user?.role==='supervisor';
     const{heat:curHeatG}=getActiveHeat();
   const studentsH=useMemo(()=>withHeatKm(students,curHeatG,benefits,awards),[students,curHeatG,benefits,awards]);
-  const today=votes['2026-08-09']||{};
+   useEffect(()=>{window.__benefits=benefits;window.__awards=awards;},[benefits,awards]);
+   const today=votes['2026-08-09']||{};
   const myVote=authUid?today[authUid]:null;
 
   const commentsArr=useMemo(()=>{
